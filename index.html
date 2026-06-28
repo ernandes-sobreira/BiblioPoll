@@ -498,6 +498,16 @@ function initProf(){
   // Renderizar thumbs
   renderThumbs();
   showSlide(0);
+  // Tipos extras para o editor
+  TYPE_LABELS['map']='Mapa';
+  TYPE_LABELS['perguntacientifica']='Pergunta científica';
+  TYPE_COLORS['map']='rgba(57,211,83,.2)';
+  TYPE_COLORS['perguntacientifica']='rgba(188,140,255,.2)';
+  TYPE_FG['map']='#39d353';
+  TYPE_FG['perguntacientifica']='#bc8cff';
+  // Mostrar botão editor
+  const edBtn=document.getElementById('editor-open-btn');
+  if(edBtn) edBtn.style.display='';
 }
 
 function renderThumbs(){
@@ -548,99 +558,7 @@ function clearResponses(){
 }
 
 // ─── RESULTS DISPLAY ─────────────────────────────────────────────────────────
-function updateResults(snap, slide){
-  const data = snap.val() || {};
-  const entries = Object.values(data);
-  const n = entries.length;
-  document.getElementById('responses-badge').textContent = n + ' resposta' + (n!==1?'s':'');
 
-  // Live feed
-  const feed = document.getElementById('live-feed-list');
-  const recent = entries.slice(-6).reverse();
-  if(recent.length === 0){
-    feed.innerHTML = '<div class="lf-empty">Aguardando respostas...</div>';
-  } else {
-    feed.innerHTML = recent.map(e => `
-      <div class="lf-item"><div class="lf-dot"></div>
-      <span><strong>${e.name||'Aluno'}</strong>: ${String(e.value).substring(0,50)}</span></div>`).join('');
-  }
-
-  const area = document.getElementById('prof-result-area');
-
-  if(slide.type === 'mc'){
-    const counts = {};
-    slide.options.forEach(o => counts[o] = 0);
-    entries.forEach(e => { if(counts[e.value]!==undefined) counts[e.value]++; });
-    const labels = slide.options.map(o => o.length>30?o.slice(0,28)+'…':o);
-    const vals = slide.options.map(o => counts[o]);
-    area.innerHTML = '<div class="chart-wrap"><canvas id="result-chart" height="200"></canvas></div>';
-    if(_charts.result) _charts.result.destroy();
-    _charts.result = new Chart(document.getElementById('result-chart'),{
-      type:'bar', data:{labels, datasets:[{data:vals, backgroundColor:slide.color+'99', borderColor:slide.color, borderWidth:2, borderRadius:6}]},
-      options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
-    });
-  }
-
-  else if(slide.type === 'scale'){
-    const buckets = {};
-    for(let v=slide.min;v<=slide.max;v++) buckets[v]=0;
-    entries.forEach(e=>{ const v=parseInt(e.value); if(buckets[v]!==undefined) buckets[v]++; });
-    const vals = Object.values(buckets);
-    const maxV = Math.max(...vals, 1);
-    const avg = entries.length ? (entries.reduce((s,e)=>s+parseInt(e.value),0)/entries.length).toFixed(1) : '—';
-    area.innerHTML = `
-      <div class="scale-display">
-        ${Object.keys(buckets).map((k,i)=>`
-          <div class="scale-bar-wrap">
-            <div class="scale-cnt">${buckets[k]||''}</div>
-            <div class="scale-bar" style="height:${Math.max(4,(buckets[k]/maxV)*110)}px;background:${slide.color}99"></div>
-            <div class="scale-lbl">${k}</div>
-          </div>`).join('')}
-      </div>
-      <div class="avg-display">${avg}</div>
-      <div class="avg-lbl">média · ${n} resposta${n!==1?'s':''}</div>`;
-  }
-
-  else if(slide.type === 'wordcloud'){
-    const freq = {};
-    entries.forEach(e => {
-      const w = String(e.value).toLowerCase().trim();
-      if(w) freq[w] = (freq[w]||0) + 1;
-    });
-    const sorted = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,40);
-    const maxF = sorted[0]?sorted[0][1]:1;
-    const colors = ['#58a6ff','#bc8cff','#39d353','#e3b341','#f778ba','#e05c2a','#56d364'];
-    area.innerHTML = `<div class="wordcloud-display">${
-      sorted.map(([w,f],i)=>`<span class="wc-word" style="font-size:${14+(f/maxF)*32}px;color:${colors[i%colors.length]}">${w}</span>`).join('')
-    }</div>`;
-  }
-
-  else if(slide.type === 'open'){
-    area.innerHTML = `<div class="open-responses">${
-      entries.slice(-20).reverse().map(e=>`<div class="open-r-item"><strong>${e.name||'Aluno'}:</strong> ${e.value}</div>`).join('') ||
-      '<div class="lf-empty">Nenhuma resposta ainda.</div>'
-    }</div>`;
-  }
-
-  else if(slide.type === 'ranking'){
-    const scores = {};
-    slide.items.forEach(it => scores[it] = 0);
-    entries.forEach(e => {
-      if(Array.isArray(e.value)){
-        e.value.forEach((it,pos) => { if(scores[it]!==undefined) scores[it] += (slide.items.length - pos); });
-      }
-    });
-    const ranked = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
-    area.innerHTML = `<div class="ranking-display">${
-      ranked.map(([it,sc],i)=>`
-        <div class="rank-item">
-          <span class="rank-pos">${['🥇','🥈','🥉','4','5'][i]||i+1}</span>
-          <span class="rank-text">${it}</span>
-          <span class="rank-votes">${sc}pts</span>
-        </div>`).join('')
-    }</div>`;
-  }
-}
 
 // ─── TIMER ────────────────────────────────────────────────────────────────────
 function startTimer(){
@@ -689,64 +607,7 @@ function showError(msg){
   setTimeout(()=>el.style.display='none', 3000);
 }
 
-function showAlunoSlide(idx){
-  const s = SLIDES[idx];
-  document.getElementById('aluno-waiting').style.display = 'none';
-  document.getElementById('aluno-finished').style.display = 'none';
-  document.getElementById('aluno-slides-area').style.display = '';
 
-  // Progress dots
-  document.getElementById('aluno-progress').innerHTML = SLIDES.map((_,i)=>
-    `<div class="sp-dot ${i<idx?'done':i===idx?'active':''}"></div>`).join('');
-
-  const already = answeredSlides.has(s.id);
-  let html = `<div class="aluno-q-eyebrow">${s.eyebrow}</div>
-               <div class="aluno-q-text">${s.title}</div>`;
-
-  if(s.type === 'mc'){
-    const letters = 'ABCD';
-    html += `<div class="mc-options">${s.options.map((o,i)=>`
-      <div class="mc-opt ${already?'disabled':''}" onclick="submitMC(this,'${s.id}','${o.replace(/'/g,"\\'")}')">
-        <div class="opt-letter">${letters[i]}</div>${o}
-      </div>`).join('')}</div>`;
-  }
-
-  else if(s.type === 'scale'){
-    html += `<div class="scale-labels"><span>${s.minLabel}</span><span>${s.maxLabel}</span></div>
-             <div class="scale-opts">`;
-    for(let v=s.min;v<=s.max;v++){
-      html += `<div class="scale-opt ${already?'disabled':''}" onclick="submitScale(this,'${s.id}',${v})">${v}</div>`;
-    }
-    html += `</div>`;
-    html += `<button class="submit-btn" id="scale-submit" style="display:none" onclick="doSubmitScale('${s.id}')">Enviar →</button>`;
-  }
-
-  else if(s.type === 'wordcloud'){
-    html += `<input class="wc-input" id="wc-inp" placeholder="${s.placeholder||'Uma palavra...'}" maxlength="30" ${already?'disabled':''}>
-             <div class="wc-hint">Apenas uma palavra ou expressão curta.</div>
-             <button class="submit-btn" ${already?'disabled':''} onclick="submitWC('${s.id}')">Enviar →</button>`;
-  }
-
-  else if(s.type === 'open'){
-    html += `<textarea class="open-input" id="open-inp" placeholder="${s.placeholder||'Sua resposta...'}" maxlength="200" ${already?'disabled':''}></textarea>
-             <button class="submit-btn" ${already?'disabled':''} onclick="submitOpen('${s.id}')">Enviar →</button>`;
-  }
-
-  else if(s.type === 'ranking'){
-    html += `<div class="rank-drag" id="rank-list">`;
-    s.items.forEach((it,i)=>{
-      html += `<div class="rank-drag-item" draggable="${!already}" data-item="${it}" ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dropItem(event)">
-        <span class="rank-handle">⠿</span><span class="rank-idx">${i+1}</span><span>${it}</span></div>`;
-    });
-    html += `</div><button class="submit-btn" ${already?'disabled':''} onclick="submitRanking('${s.id}')">Confirmar ordem →</button>`;
-  }
-
-  if(already){
-    html += `<div class="submitted-msg">✓ Resposta enviada! Aguarde o próximo slide.</div>`;
-  }
-
-  document.getElementById('aluno-slide-content').innerHTML = html;
-}
 
 // ─── SUBMIT HELPERS ───────────────────────────────────────────────────────────
 function sendResponse(slideId, value){
@@ -999,7 +860,6 @@ function renderPQResult(entries, slide, area){
 }
 
 // ─── PATCH updateResults para novos tipos ─────────────────────────────────────
-const _origUpdateResults = updateResults;
 function updateResults(snap, slide){
   const data=snap.val()||{};
   const entries=Object.values(data);
@@ -1053,7 +913,6 @@ function updateResults(snap, slide){
 // ─── ALUNO: NOVOS TIPOS ───────────────────────────────────────────────────────
 let alunoMap=null, alunoMarker=null, alunoMapCoords=null;
 
-const _origShowAlunoSlide=showAlunoSlide;
 function showAlunoSlide(idx){
   // Destruir mapa anterior se existir
   if(alunoMap){ alunoMap.remove(); alunoMap=null; alunoMarker=null; alunoMapCoords=null; }
@@ -1128,19 +987,6 @@ function submitMap(slideId){
   document.getElementById('aluno-slide-content').insertAdjacentHTML('beforeend','<div class="submitted-msg">✓ Localização enviada!</div>');
 }
 
-// ─── MOSTRAR BOTÃO EDITOR SÓ PARA PROFESSOR ───────────────────────────────────
-const _origInitProf=initProf;
-function initProf(){
-  _origInitProf();
-  document.getElementById('editor-open-btn').style.display='';
-  // Adicionar tipos novos ao TYPE_LABELS
-  TYPE_LABELS['map']='Mapa';
-  TYPE_LABELS['perguntacientifica']='Pergunta científica';
-  TYPE_COLORS['map']='rgba(57,211,83,.2)';
-  TYPE_COLORS['perguntacientifica']='rgba(188,140,255,.2)';
-  TYPE_FG['map']='#39d353';
-  TYPE_FG['perguntacientifica']='#bc8cff';
-}
 
 // ─── URL PARAMS (QR code leva direto ao aluno) ───────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
