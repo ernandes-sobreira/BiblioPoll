@@ -8,6 +8,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -199,6 +201,56 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .finished-screen h2{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--ink);margin-bottom:.4rem}
 .finished-screen p{font-size:13px;color:var(--ink3)}
 
+
+/* EDITOR DE SLIDES */
+.editor-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto}
+.editor-overlay.open{display:flex}
+.editor-card{background:#161b22;border:1px solid #30363d;border-radius:14px;width:100%;max-width:680px;padding:2rem}
+.editor-card h2{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#f0f6fc;margin-bottom:1.5rem}
+.editor-form{display:flex;flex-direction:column;gap:1rem}
+.ef-row{display:flex;gap:.8rem;flex-wrap:wrap}
+.ef-field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:180px}
+.ef-field label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8b949e}
+.ef-field input,.ef-field select,.ef-field textarea{background:#21262d;border:1px solid #30363d;border-radius:6px;padding:.6rem .8rem;font-family:'DM Sans',sans-serif;font-size:13.5px;color:#f0f6fc;outline:none;transition:border-color .12s}
+.ef-field input:focus,.ef-field select:focus,.ef-field textarea:focus{border-color:#58a6ff}
+.ef-field textarea{min-height:70px;resize:vertical;line-height:1.5}
+.options-editor{display:flex;flex-direction:column;gap:.4rem;margin-top:.3rem}
+.opt-row{display:flex;gap:.4rem;align-items:center}
+.opt-row input{flex:1;background:#21262d;border:1px solid #30363d;border-radius:5px;padding:.45rem .7rem;font-family:'DM Sans',sans-serif;font-size:13px;color:#f0f6fc;outline:none}
+.opt-row input:focus{border-color:#58a6ff}
+.opt-del{background:transparent;border:1px solid #30363d;color:#8b949e;border-radius:5px;padding:0 .5rem;height:30px;cursor:pointer;font-size:14px}
+.opt-del:hover{background:#f851491a;border-color:#f85149;color:#f85149}
+.ed-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1rem;flex-wrap:wrap}
+.ed-btn{padding:.55rem 1.1rem;border-radius:6px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s}
+.ed-btn-sec{background:#21262d;color:#c9d1d9;border:1px solid #30363d}.ed-btn-sec:hover{background:#30363d}
+.ed-btn-pri{background:#e05c2a;color:#fff}.ed-btn-pri:hover{background:#c04820}
+.ed-btn-dan{background:#f851491a;color:#f85149;border:1px solid #f8514940}.ed-btn-dan:hover{background:#f851493a}
+/* SLIDES LIST */
+.slides-list{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem}
+.sl-item{display:flex;align-items:center;gap:.5rem;padding:.5rem .7rem;background:#21262d;border:1px solid #30363d;border-radius:6px;cursor:pointer;transition:all .12s}
+.sl-item:hover{border-color:#58a6ff}
+.sl-num{font-family:'DM Mono',monospace;font-size:11px;color:#8b949e;width:20px}
+.sl-type{font-size:9px;font-weight:700;text-transform:uppercase;padding:1px 5px;border-radius:3px}
+.sl-title{flex:1;font-size:12px;color:#c9d1d9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sl-actions{display:flex;gap:.3rem}
+.sl-btn{background:transparent;border:1px solid #30363d;color:#8b949e;border-radius:4px;padding:2px 6px;font-size:11px;cursor:pointer}
+.sl-btn:hover{background:#30363d;color:#f0f6fc}
+.add-slide-btn{width:100%;padding:.6rem;border-radius:6px;border:1px dashed #30363d;background:transparent;color:#58a6ff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s}
+.add-slide-btn:hover{background:#58a6ff1a;border-color:#58a6ff}
+.editor-open-btn{position:fixed;bottom:1.2rem;right:1.2rem;background:#e05c2a;color:#fff;border:none;border-radius:50%;width:52px;height:52px;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 16px rgba(224,92,42,.4);z-index:300;transition:all .15s}
+.editor-open-btn:hover{background:#c04820;transform:scale(1.08)}
+/* MAPA */
+#map-container{height:340px;border-radius:8px;overflow:hidden;margin-top:.5rem;z-index:1}
+.map-pins-list{margin-top:.8rem;display:flex;flex-wrap:wrap;gap:.4rem}
+.map-pin-badge{font-size:11px;padding:3px 8px;border-radius:12px;background:rgba(57,211,83,.15);border:1px solid rgba(57,211,83,.3);color:#39d353;font-weight:600}
+/* PERGUNTA CIENTÍFICA */
+.pq-cloud{min-height:200px;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:center;padding:1rem;background:#0d1117;border-radius:8px}
+.pq-responses{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:.4rem;margin-top:.8rem}
+.pq-item{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:.5rem .8rem;font-size:12px;color:#c9d1d9;line-height:1.5}
+/* ALUNO MAPA */
+#aluno-map{height:300px;border-radius:8px;overflow:hidden;margin-bottom:.8rem;z-index:1}
+.map-confirm-msg{background:rgba(57,211,83,.1);border:1px solid rgba(57,211,83,.3);border-radius:6px;padding:.7rem 1rem;font-size:13px;color:#39d353;font-weight:600;margin-bottom:.8rem;display:none}
+
 /* RESPONSIVE */
 @media(max-width:700px){
   #screen-prof{flex-direction:column}
@@ -293,6 +345,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
   </div>
 </div>
 
+<!-- ══ EDITOR OVERLAY ═══════════════════════════════════════════════════════ -->
+<div class="editor-overlay" id="editor-overlay">
+  <div class="editor-card">
+    <h2>✏️ Editor de slides</h2>
+    <div class="slides-list" id="editor-slides-list"></div>
+    <button class="add-slide-btn" onclick="addNewSlide()">+ Adicionar slide</button>
+    <div id="slide-form-area" style="margin-top:1.2rem;display:none">
+      <div style="height:1px;background:#30363d;margin-bottom:1.2rem"></div>
+      <div class="editor-form" id="slide-edit-form"></div>
+    </div>
+    <div class="ed-actions">
+      <button class="ed-btn ed-btn-sec" onclick="closeEditor()">Fechar</button>
+      <button class="ed-btn ed-btn-pri" onclick="saveSlides()">💾 Salvar e publicar</button>
+    </div>
+  </div>
+</div>
+<button class="editor-open-btn" id="editor-open-btn" style="display:none" onclick="openEditor()" title="Editar slides">✏️</button>
+
 <!-- ══ ALUNO SCREEN ══════════════════════════════════════════════════════════ -->
 <div class="screen" id="screen-aluno">
   <div class="aluno-header">
@@ -353,72 +423,20 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 // ─── SLIDES DATA ──────────────────────────────────────────────────────────────
-const SLIDES = [
-  {
-    id:'s1', type:'wordcloud',
-    eyebrow:'Diagnóstico inicial · Slide 1 de 9',
-    title:'Escreva UMA palavra que você associa a "artigo científico"',
-    color:'#58a6ff',
-    placeholder:'Digite uma palavra...'
-  },
-  {
-    id:'s2', type:'mc',
-    eyebrow:'Diagnóstico inicial · Slide 2 de 9',
-    title:'Você já fez uma busca sistemática de literatura?',
-    color:'#bc8cff',
-    options:['Nunca fiz','Uma vez, sem método','Algumas vezes','Faço regularmente com strings e filtros']
-  },
-  {
-    id:'s3', type:'scale',
-    eyebrow:'Diagnóstico inicial · Slide 3 de 9',
-    title:'Quão seguro você se sente para buscar artigos no Web of Science? (1 = nenhuma segurança · 10 = totalmente seguro)',
-    color:'#e3b341',
-    min:1, max:10,
-    minLabel:'Nenhuma segurança', maxLabel:'Totalmente seguro'
-  },
-  {
-    id:'s4', type:'mc',
-    eyebrow:'Leis da Bibliometria · Slide 4 de 9',
-    title:'Qual lei descreve a distribuição de autores por produtividade científica?',
-    color:'#bc8cff',
-    options:['Lei de Lotka','Lei de Bradford','Lei de Zipf','Lei de Pareto']
-  },
-  {
-    id:'s5', type:'open',
-    eyebrow:'Leis da Bibliometria · Slide 5 de 9',
-    title:'Em uma frase: o que a Lei de Bradford significa para sua revisão de literatura?',
-    color:'#39d353',
-    placeholder:'Escreva sua resposta aqui...'
-  },
-  {
-    id:'s6', type:'ranking',
-    eyebrow:'Pesquisa Qualitativa · Slide 6 de 9',
-    title:'Ordene do que você considera mais rigoroso ao menos rigoroso como método de pesquisa',
-    color:'#f778ba',
-    items:['Entrevista semiestruturada','Observação participante','Questionário aberto','Análise documental']
-  },
-  {
-    id:'s7', type:'wordcloud',
-    eyebrow:'Pesquisa Qualitativa · Slide 7 de 9',
-    title:'O que torna uma pesquisa qualitativa confiável? (uma palavra ou expressão curta)',
-    color:'#58a6ff',
-    placeholder:'Digite uma palavra ou expressão...'
-  },
-  {
-    id:'s8', type:'scale',
-    eyebrow:'Avaliação final · Slide 8 de 9',
-    title:'Após a disciplina: quão seguro você se sente para buscar artigos no Web of Science? (1–10)',
-    color:'#e3b341',
-    min:1, max:10,
-    minLabel:'Nenhuma segurança', maxLabel:'Totalmente seguro'
-  },
-  {
-    id:'s9', type:'open',
-    eyebrow:'Encerramento · Slide 9 de 9',
-    title:'Qual foi o maior aprendizado desta disciplina?',
-    color:'#39d353',
-    placeholder:'Compartilhe seu aprendizado...'
-  }
+// Slides carregados do Firebase ou padrão
+let SLIDES = [
+  {id:'s1',type:'wordcloud',eyebrow:'Diagnóstico inicial',title:'Escreva UMA palavra que você associa a "artigo científico"',color:'#58a6ff',placeholder:'Digite uma palavra...'},
+  {id:'s2',type:'mc',eyebrow:'Diagnóstico inicial',title:'Você já fez uma busca sistemática de literatura?',color:'#bc8cff',options:['Nunca fiz','Uma vez, sem método','Algumas vezes','Faço regularmente']},
+  {id:'s3',type:'scale',eyebrow:'Diagnóstico inicial',title:'Quão seguro você se sente para buscar artigos no Web of Science? (1–10)',color:'#e3b341',min:1,max:10,minLabel:'Nenhuma segurança',maxLabel:'Totalmente seguro'},
+  {id:'s4',type:'mc',eyebrow:'Leis da Bibliometria',title:'Qual lei descreve a distribuição de autores por produtividade científica?',color:'#bc8cff',options:['Lei de Lotka','Lei de Bradford','Lei de Zipf','Lei de Pareto']},
+  {id:'s5',type:'open',eyebrow:'Leis da Bibliometria',title:'Em uma frase: o que a Lei de Bradford significa para sua revisão de literatura?',color:'#39d353',placeholder:'Escreva sua resposta aqui...'},
+  {id:'s6',type:'ranking',eyebrow:'Pesquisa Qualitativa',title:'Ordene do mais ao menos rigoroso como método de pesquisa',color:'#f778ba',items:['Entrevista semiestruturada','Observação participante','Questionário aberto','Análise documental']},
+  {id:'s7',type:'wordcloud',eyebrow:'Pesquisa Qualitativa',title:'O que torna uma pesquisa qualitativa confiável? (uma palavra ou expressão curta)',color:'#58a6ff',placeholder:'Digite uma palavra ou expressão...'},
+  {id:'s8',type:'scale',eyebrow:'Avaliação final',title:'Após a disciplina: quão seguro você se sente para buscar artigos no Web of Science? (1–10)',color:'#e3b341',min:1,max:10,minLabel:'Nenhuma segurança',maxLabel:'Totalmente seguro'},
+  {id:'s9',type:'open',eyebrow:'Encerramento',title:'Qual foi o maior aprendizado desta disciplina?',color:'#39d353',placeholder:'Compartilhe seu aprendizado...'},
+  {id:'s10',type:'map',eyebrow:'Localização da pesquisa',title:'Clique no mapa para marcar onde está o local da sua pesquisa científica',color:'#39d353'},
+  {id:'s11',type:'perguntacientifica',eyebrow:'Pergunta científica',title:'Escreva a pergunta científica do seu projeto de pesquisa',color:'#bc8cff',placeholder:'Qual é o efeito de... sobre... em...?'},
+  {id:'s12',type:'mc',eyebrow:'Visibilidade do projeto',title:'Você tem um plano de visibilidade para o seu projeto de pesquisa?',color:'#f778ba',options:['Sim, tenho um plano estruturado','Tenho algumas ações mas sem plano','Não tenho plano de visibilidade','Nunca pensei nisso']}
 ];
 
 const TYPE_LABELS = {
@@ -812,6 +830,316 @@ function submitRanking(slideId){
   sendResponse(slideId, items);
   document.getElementById('aluno-slide-content').insertAdjacentHTML('beforeend',
     '<div class="submitted-msg">✓ Ranking enviado! Aguarde o próximo slide.</div>');
+}
+
+
+// ─── EDITOR DE SLIDES ─────────────────────────────────────────────────────────
+let editingIdx = null;
+
+function openEditor(){
+  renderEditorList();
+  document.getElementById('slide-form-area').style.display='none';
+  document.getElementById('editor-overlay').classList.add('open');
+}
+function closeEditor(){ document.getElementById('editor-overlay').classList.remove('open'); editingIdx=null; }
+
+function renderEditorList(){
+  document.getElementById('editor-slides-list').innerHTML = SLIDES.map((s,i)=>`
+    <div class="sl-item">
+      <span class="sl-num">${i+1}</span>
+      <span class="sl-type" style="background:${TYPE_COLORS[s.type]};color:${TYPE_FG[s.type]}">${TYPE_LABELS[s.type]}</span>
+      <span class="sl-title">${s.title}</span>
+      <div class="sl-actions">
+        <button class="sl-btn" onclick="editSlide(${i})" title="Editar">✏️</button>
+        <button class="sl-btn" onclick="moveSlide(${i},-1)" title="Subir">↑</button>
+        <button class="sl-btn" onclick="moveSlide(${i},1)" title="Descer">↓</button>
+        <button class="sl-btn" onclick="deleteSlide(${i})" title="Remover" style="color:#f85149">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function moveSlide(i, dir){
+  const j=i+dir;
+  if(j<0||j>=SLIDES.length) return;
+  [SLIDES[i],SLIDES[j]]=[SLIDES[j],SLIDES[i]];
+  renderEditorList();
+}
+
+function deleteSlide(i){
+  if(!confirm('Remover este slide?')) return;
+  SLIDES.splice(i,1);
+  renderEditorList();
+}
+
+function addNewSlide(){
+  SLIDES.push({id:'s'+Date.now(),type:'open',eyebrow:'Nova pergunta',title:'Nova pergunta',color:'#58a6ff',placeholder:'Responda aqui...'});
+  editSlide(SLIDES.length-1);
+  renderEditorList();
+}
+
+function editSlide(i){
+  editingIdx=i;
+  const s=SLIDES[i];
+  const area=document.getElementById('slide-form-area');
+  area.style.display='';
+
+  const typeOpts=['wordcloud','mc','scale','open','ranking','map','perguntacientifica']
+    .map(t=>`<option value="${t}" ${s.type===t?'selected':''}>${TYPE_LABELS[t]||t}</option>`).join('');
+
+  let extra='';
+  if(s.type==='mc'||s.type==='ranking'){
+    const items=s.options||s.items||[];
+    extra=`<div class="ef-field" style="width:100%"><label>Opções (uma por linha)</label>
+      <div class="options-editor" id="opts-editor">
+        ${items.map((o,j)=>`<div class="opt-row"><input value="${o}" oninput="updateOpt(${j},this.value)"><button class="opt-del" onclick="removeOpt(${j})">×</button></div>`).join('')}
+      </div>
+      <button class="add-slide-btn" style="margin-top:.4rem" onclick="addOpt()">+ Opção</button>
+    </div>`;
+  }
+  if(s.type==='scale'){
+    extra=`<div class="ef-row">
+      <div class="ef-field"><label>Mínimo</label><input type="number" id="ef-min" value="${s.min||1}"></div>
+      <div class="ef-field"><label>Máximo</label><input type="number" id="ef-max" value="${s.max||10}"></div>
+      <div class="ef-field"><label>Label mínimo</label><input id="ef-minlbl" value="${s.minLabel||''}"></div>
+      <div class="ef-field"><label>Label máximo</label><input id="ef-maxlbl" value="${s.maxLabel||''}"></div>
+    </div>`;
+  }
+
+  document.getElementById('slide-edit-form').innerHTML=`
+    <div class="ef-row">
+      <div class="ef-field"><label>Tipo</label><select id="ef-type" onchange="editSlide(${i})">${typeOpts}</select></div>
+      <div class="ef-field"><label>Cor</label><input type="color" id="ef-color" value="${s.color||'#58a6ff'}" style="height:36px;padding:2px 4px"></div>
+    </div>
+    <div class="ef-field"><label>Eyebrow (subtítulo)</label><input id="ef-eyebrow" value="${s.eyebrow||''}"></div>
+    <div class="ef-field"><label>Pergunta / enunciado</label><textarea id="ef-title">${s.title||''}</textarea></div>
+    ${s.type==='open'||s.type==='wordcloud'||s.type==='perguntacientifica'?`<div class="ef-field"><label>Placeholder</label><input id="ef-placeholder" value="${s.placeholder||''}"></div>`:''}
+    ${extra}
+    <div class="ed-actions" style="justify-content:flex-start">
+      <button class="ed-btn ed-btn-pri" onclick="applySlideEdit()">Aplicar alterações</button>
+      <button class="ed-btn ed-btn-dan" onclick="deleteSlide(${i});closeEditor()">Excluir slide</button>
+    </div>`;
+
+  // Atualizar tipo ao mudar select
+  document.getElementById('ef-type').addEventListener('change',()=>{
+    SLIDES[editingIdx].type=document.getElementById('ef-type').value;
+    editSlide(editingIdx);
+  });
+}
+
+let _editOpts=[];
+function updateOpt(j,v){ _editOpts[j]=v; }
+function removeOpt(j){ _editOpts.splice(j,1); const s=SLIDES[editingIdx]; s.options=s.items=_editOpts.slice(); editSlide(editingIdx); }
+function addOpt(){ _editOpts.push('Nova opção'); const s=SLIDES[editingIdx]; s.options=s.items=_editOpts.slice(); editSlide(editingIdx); }
+
+function applySlideEdit(){
+  if(editingIdx===null) return;
+  const s=SLIDES[editingIdx];
+  s.type=document.getElementById('ef-type').value;
+  s.color=document.getElementById('ef-color').value;
+  s.eyebrow=document.getElementById('ef-eyebrow').value;
+  s.title=document.getElementById('ef-title').value;
+  if(document.getElementById('ef-placeholder')) s.placeholder=document.getElementById('ef-placeholder').value;
+  if(document.getElementById('ef-min')) s.min=parseInt(document.getElementById('ef-min').value)||1;
+  if(document.getElementById('ef-max')) s.max=parseInt(document.getElementById('ef-max').value)||10;
+  if(document.getElementById('ef-minlbl')) s.minLabel=document.getElementById('ef-minlbl').value;
+  if(document.getElementById('ef-maxlbl')) s.maxLabel=document.getElementById('ef-maxlbl').value;
+  // Opções
+  const opts=[...document.querySelectorAll('#opts-editor input')].map(i=>i.value).filter(Boolean);
+  if(opts.length){ s.options=opts; s.items=opts; }
+  renderEditorList();
+  alert('Alterações aplicadas! Clique em "Salvar e publicar" para enviar à turma.');
+}
+
+function saveSlides(){
+  // Salvar no Firebase para que os alunos recebam a lista atualizada
+  db.ref('rooms/'+roomCode+'/slidesMeta').set(JSON.stringify(SLIDES));
+  renderThumbs();
+  closeEditor();
+  showSlide(Math.min(currentSlide, SLIDES.length-1));
+  alert('Slides publicados para a turma!');
+}
+
+// ─── RESULTADOS: MAPA ─────────────────────────────────────────────────────────
+let profMap=null, profMarkers=[];
+
+function renderMapResult(entries, slide, area){
+  area.innerHTML=`<div id="map-container"></div><div class="map-pins-list" id="map-pins"></div>`;
+  setTimeout(()=>{
+    if(!profMap){
+      profMap=L.map('map-container').setView([-15,-55],4);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(profMap);
+    } else {
+      profMarkers.forEach(m=>profMap.removeLayer(m)); profMarkers=[];
+    }
+    const pins=document.getElementById('map-pins');
+    pins.innerHTML='';
+    entries.forEach(e=>{
+      if(!e.value||!e.value.lat) return;
+      const m=L.marker([e.value.lat,e.value.lng]).addTo(profMap)
+        .bindPopup(`<strong>${e.name}</strong><br>${e.value.label||''}`);
+      profMarkers.push(m);
+      pins.innerHTML+=`<span class="map-pin-badge">📍 ${e.name}</span>`;
+    });
+  },100);
+}
+
+// ─── RESULTADOS: PERGUNTA CIENTÍFICA ─────────────────────────────────────────
+const STOPWORDS=new Set(['o','a','os','as','de','da','do','das','dos','em','para','com','por','uma','um','é','na','no','nas','nos','se','sua','seu','suas','seus','ao','à','pela','pelo','entre','foi','são','mais','como','também','sobre','quando','bem','que','e','ou','mas','não','já','este','esta','estes','estas','isso','esse','essa','esses','essas','qual','quais','como','onde','porque','pois','então','há','ter','ser','estar','tem','têm','foi','eram','será','pode','podem','deve','devem','quais','qual','efeito','efeitos','relação','entre','sobre','análise','avaliação','estudo','investigação','impacto','impactos','influência','papel']);
+
+function renderPQResult(entries, slide, area){
+  const allText=entries.map(e=>String(e.value||'')).join(' ');
+  const words=allText.toLowerCase().replace(/[^a-záàâãéèêíïóôõöúçñ\s]/g,'').split(/\s+/).filter(w=>w.length>2&&!STOPWORDS.has(w));
+  const freq={};words.forEach(w=>{freq[w]=(freq[w]||0)+1});
+  const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,35);
+  const maxF=sorted[0]?sorted[0][1]:1;
+  const colors=['#58a6ff','#bc8cff','#39d353','#e3b341','#f778ba','#e05c2a','#56d364'];
+  const cloud=sorted.map(([w,f],i)=>`<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:${13+(f/maxF)*30}px;color:${colors[i%7]};padding:2px 4px">${w}</span>`).join('');
+  const resList=entries.slice(-10).reverse().map(e=>`<div class="pq-item"><strong>${e.name}:</strong> ${e.value}</div>`).join('');
+  area.innerHTML=`<div class="pq-cloud">${cloud||'<span style="color:#8b949e;font-size:13px">Aguardando perguntas...</span>'}</div><div class="pq-responses">${resList}</div>`;
+}
+
+// ─── PATCH updateResults para novos tipos ─────────────────────────────────────
+const _origUpdateResults = updateResults;
+function updateResults(snap, slide){
+  const data=snap.val()||{};
+  const entries=Object.values(data);
+  const n=entries.length;
+  document.getElementById('responses-badge').textContent=n+' resposta'+(n!==1?'s':'');
+
+  // Feed ao vivo
+  const feed=document.getElementById('live-feed-list');
+  const recent=entries.slice(-6).reverse();
+  feed.innerHTML=recent.length?recent.map(e=>`<div class="lf-item"><div class="lf-dot"></div><span><strong>${e.name||'Aluno'}</strong>: ${typeof e.value==='object'?JSON.stringify(e.value).substring(0,40):String(e.value).substring(0,50)}</span></div>`).join(''):'<div class="lf-empty">Aguardando respostas...</div>';
+
+  const area=document.getElementById('prof-result-area');
+  if(slide.type==='map'){ renderMapResult(entries,slide,area); return; }
+  if(slide.type==='perguntacientifica'){ renderPQResult(entries,slide,area); return; }
+
+  // Demais tipos — chamar original (re-implementar inline para evitar recursão)
+  if(slide.type==='mc'){
+    const counts={};(slide.options||[]).forEach(o=>counts[o]=0);
+    entries.forEach(e=>{if(counts[e.value]!==undefined)counts[e.value]++});
+    const labels=(slide.options||[]).map(o=>o.length>30?o.slice(0,28)+'…':o);
+    const vals=(slide.options||[]).map(o=>counts[o]);
+    area.innerHTML='<div class="chart-wrap"><canvas id="result-chart" height="200"></canvas></div>';
+    if(_ch.result)_ch.result.destroy();
+    _ch.result=new Chart(document.getElementById('result-chart'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:slide.color+'99',borderColor:slide.color,borderWidth:2,borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+  }
+  else if(slide.type==='scale'){
+    const buckets={};for(let v=slide.min;v<=slide.max;v++)buckets[v]=0;
+    entries.forEach(e=>{const v=parseInt(e.value);if(buckets[v]!==undefined)buckets[v]++});
+    const vals=Object.values(buckets),maxV=Math.max(...vals,1);
+    const avg=entries.length?(entries.reduce((s,e)=>s+parseInt(e.value),0)/entries.length).toFixed(1):'—';
+    area.innerHTML=`<div class="scale-display">${Object.keys(buckets).map(k=>`<div class="scale-bar-wrap"><div class="scale-cnt">${buckets[k]||''}</div><div class="scale-bar" style="height:${Math.max(4,(buckets[k]/maxV)*110)}px;background:${slide.color}99"></div><div class="scale-lbl">${k}</div></div>`).join('')}</div><div class="avg-display">${avg}</div><div class="avg-lbl">média · ${n} resposta${n!==1?'s':''}</div>`;
+  }
+  else if(slide.type==='wordcloud'){
+    const freq={};entries.forEach(e=>{const w=String(e.value).toLowerCase().trim();if(w)freq[w]=(freq[w]||0)+1});
+    const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,40);
+    const maxF=sorted[0]?sorted[0][1]:1;
+    const colors=['#58a6ff','#bc8cff','#39d353','#e3b341','#f778ba','#e05c2a','#56d364'];
+    area.innerHTML=`<div class="wordcloud-display">${sorted.map(([w,f],i)=>`<span class="wc-word" style="font-size:${14+(f/maxF)*32}px;color:${colors[i%colors.length]}">${w}</span>`).join('')}</div>`;
+  }
+  else if(slide.type==='open'){
+    area.innerHTML=`<div class="open-responses">${entries.slice(-20).reverse().map(e=>`<div class="open-r-item"><strong>${e.name||'Aluno'}:</strong> ${e.value}</div>`).join('')||'<div class="lf-empty">Nenhuma resposta ainda.</div>'}</div>`;
+  }
+  else if(slide.type==='ranking'){
+    const scores={};(slide.items||[]).forEach(it=>scores[it]=0);
+    entries.forEach(e=>{if(Array.isArray(e.value))e.value.forEach((it,pos)=>{if(scores[it]!==undefined)scores[it]+=(slide.items.length-pos)})});
+    const ranked=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+    area.innerHTML=`<div class="ranking-display">${ranked.map(([it,sc],i)=>`<div class="rank-item"><span class="rank-pos">${['🥇','🥈','🥉','4','5'][i]||i+1}</span><span class="rank-text">${it}</span><span class="rank-votes">${sc}pts</span></div>`).join('')}</div>`;
+  }
+}
+
+// ─── ALUNO: NOVOS TIPOS ───────────────────────────────────────────────────────
+let alunoMap=null, alunoMarker=null, alunoMapCoords=null;
+
+const _origShowAlunoSlide=showAlunoSlide;
+function showAlunoSlide(idx){
+  // Destruir mapa anterior se existir
+  if(alunoMap){ alunoMap.remove(); alunoMap=null; alunoMarker=null; alunoMapCoords=null; }
+
+  const s=SLIDES[idx];
+  document.getElementById('aluno-waiting').style.display='none';
+  document.getElementById('aluno-finished').style.display='none';
+  document.getElementById('aluno-slides-area').style.display='';
+  document.getElementById('aluno-progress').innerHTML=SLIDES.map((_,i)=>`<div class="sp-dot ${i<idx?'done':i===idx?'active':''}"></div>`).join('');
+
+  const already=answeredSlides.has(s.id);
+  let html=`<div class="aluno-q-eyebrow" style="color:${s.color}">${s.eyebrow}</div><div class="aluno-q-text">${s.title}</div>`;
+
+  if(s.type==='map'){
+    html+=`<div class="map-confirm-msg" id="map-confirm-msg">📍 Localização marcada! Clique em "Confirmar" para enviar.</div>
+           <div id="aluno-map"></div>
+           <button class="submit-btn" ${already?'disabled':''} onclick="submitMap('${s.id}')">Confirmar localização →</button>`;
+    if(already) html+=`<div class="submitted-msg">✓ Localização enviada!</div>`;
+  }
+  else if(s.type==='perguntacientifica'){
+    html+=`<textarea class="open-input" id="open-inp" placeholder="${s.placeholder||'Qual é o efeito de... sobre... em...?'}" maxlength="250" ${already?'disabled':''}></textarea>
+           <button class="submit-btn" ${already?'disabled':''} onclick="submitOpen('${s.id}')">Enviar pergunta →</button>`;
+    if(already) html+=`<div class="submitted-msg">✓ Pergunta enviada!</div>`;
+  }
+  else if(s.type==='mc'){
+    const letters='ABCDE';
+    html+=`<div class="mc-options">${(s.options||[]).map((o,i)=>`<div class="mc-opt ${already?'disabled':''}" onclick="submitMC(this,'${s.id}','${o.replace(/'/g,"\\'")}')" ><div class="opt-letter">${letters[i]}</div>${o}</div>`).join('')}</div>`;
+    if(already) html+=`<div class="submitted-msg">✓ Resposta enviada! Aguarde o próximo slide.</div>`;
+  }
+  else if(s.type==='scale'){
+    html+=`<div class="scale-labels"><span>${s.minLabel||''}</span><span>${s.maxLabel||''}</span></div><div class="scale-opts">`;
+    for(let v=s.min;v<=s.max;v++) html+=`<div class="scale-opt ${already?'disabled':''}" onclick="submitScale(this,'${s.id}',${v})">${v}</div>`;
+    html+=`</div><button class="submit-btn" id="scale-submit" style="display:none" onclick="doSubmitScale('${s.id}')">Enviar →</button>`;
+    if(already) html+=`<div class="submitted-msg">✓ Resposta enviada!</div>`;
+  }
+  else if(s.type==='wordcloud'){
+    html+=`<input class="wc-input" id="wc-inp" placeholder="${s.placeholder||'Uma palavra...'}" maxlength="30" ${already?'disabled':''}><div class="wc-hint">Apenas uma palavra ou expressão curta.</div><button class="submit-btn" ${already?'disabled':''} onclick="submitWC('${s.id}')">Enviar →</button>`;
+    if(already) html+=`<div class="submitted-msg">✓ Enviado!</div>`;
+  }
+  else if(s.type==='open'){
+    html+=`<textarea class="open-input" id="open-inp" placeholder="${s.placeholder||'Sua resposta...'}" maxlength="200" ${already?'disabled':''}></textarea><button class="submit-btn" ${already?'disabled':''} onclick="submitOpen('${s.id}')">Enviar →</button>`;
+    if(already) html+=`<div class="submitted-msg">✓ Resposta enviada! Aguarde o próximo slide.</div>`;
+  }
+  else if(s.type==='ranking'){
+    html+=`<div class="rank-drag" id="rank-list">`;
+    (s.items||s.options||[]).forEach((it,i)=>{html+=`<div class="rank-drag-item" draggable="${!already}" data-item="${it}" ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dropItem(event)"><span class="rank-handle">⠿</span><span class="rank-idx">${i+1}</span><span>${it}</span></div>`;});
+    html+=`</div><button class="submit-btn" ${already?'disabled':''} onclick="submitRanking('${s.id}')">Confirmar ordem →</button>`;
+    if(already) html+=`<div class="submitted-msg">✓ Ranking enviado!</div>`;
+  }
+
+  document.getElementById('aluno-slide-content').innerHTML=html;
+
+  // Inicializar mapa Leaflet no aluno
+  if(s.type==='map'&&!already){
+    setTimeout(()=>{
+      alunoMap=L.map('aluno-map').setView([-15,-55],4);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(alunoMap);
+      alunoMap.on('click',function(e){
+        if(alunoMarker) alunoMap.removeLayer(alunoMarker);
+        alunoMarker=L.marker(e.latlng).addTo(alunoMap).bindPopup(alunoName||'Minha pesquisa').openPopup();
+        alunoMapCoords={lat:e.latlng.lat,lng:e.latlng.lng,label:alunoName};
+        document.getElementById('map-confirm-msg').style.display='';
+      });
+    },150);
+  }
+}
+
+function submitMap(slideId){
+  if(!alunoMapCoords){ alert('Clique no mapa para marcar a localização da sua pesquisa.'); return; }
+  if(answeredSlides.has(slideId)) return;
+  sendResponse(slideId, alunoMapCoords);
+  document.getElementById('aluno-slide-content').insertAdjacentHTML('beforeend','<div class="submitted-msg">✓ Localização enviada!</div>');
+}
+
+// ─── MOSTRAR BOTÃO EDITOR SÓ PARA PROFESSOR ───────────────────────────────────
+const _origInitProf=initProf;
+function initProf(){
+  _origInitProf();
+  document.getElementById('editor-open-btn').style.display='';
+  // Adicionar tipos novos ao TYPE_LABELS
+  TYPE_LABELS['map']='Mapa';
+  TYPE_LABELS['perguntacientifica']='Pergunta científica';
+  TYPE_COLORS['map']='rgba(57,211,83,.2)';
+  TYPE_COLORS['perguntacientifica']='rgba(188,140,255,.2)';
+  TYPE_FG['map']='#39d353';
+  TYPE_FG['perguntacientifica']='#bc8cff';
 }
 
 // ─── URL PARAMS (QR code leva direto ao aluno) ───────────────────────────────
