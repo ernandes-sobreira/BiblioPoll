@@ -538,6 +538,12 @@ function showSlide(idx){
   currentSlide = idx;
   const s = SLIDES[idx];
 
+  // Destruir mapa do professor ao trocar de slide (evita container órfão)
+  if(profMap && !document.getElementById('map-container')){
+    try{ profMap.remove(); }catch(e){}
+    profMap=null; profMarkers=[];
+  }
+
   // Atualizar Firebase
   if(slideRef) slideRef.set(idx);
   db.ref('rooms/' + roomCode + '/slideData/' + s.id).set(s);
@@ -863,23 +869,32 @@ function saveSlides(){
 let profMap=null, profMarkers=[];
 
 function renderMapResult(entries, slide, area){
-  area.innerHTML=`<div id="map-container"></div><div class="map-pins-list" id="map-pins"></div>`;
+  // Só recriar o HTML se o container não existir ainda
+  if(!document.getElementById('map-container')){
+    area.innerHTML=`<div id="map-container" style="height:340px;border-radius:8px;overflow:hidden;margin-top:.5rem;z-index:1"></div><div class="map-pins-list" id="map-pins"></div>`;
+    // Destruir instância anterior se existir
+    if(profMap){ profMap.remove(); profMap=null; profMarkers=[]; }
+  }
   setTimeout(()=>{
+    // Inicializar mapa só se ainda não existe
     if(!profMap){
       profMap=L.map('map-container').setView([-15,-55],4);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(profMap);
-    } else {
-      profMarkers.forEach(m=>profMap.removeLayer(m)); profMarkers=[];
     }
+    // Limpar markers antigos e redesenhar
+    profMarkers.forEach(m=>profMap.removeLayer(m));
+    profMarkers=[];
     const pins=document.getElementById('map-pins');
-    pins.innerHTML='';
+    if(pins) pins.innerHTML='';
     entries.forEach(e=>{
       if(!e.value||!e.value.lat) return;
       const m=L.marker([e.value.lat,e.value.lng]).addTo(profMap)
-        .bindPopup(`<strong>${e.name}</strong><br>${e.value.label||''}`);
+        .bindPopup('<strong>'+(e.name||'Aluno')+'</strong><br>'+(e.value.label||''));
       profMarkers.push(m);
-      pins.innerHTML+=`<span class="map-pin-badge">📍 ${e.name}</span>`;
+      if(pins) pins.innerHTML+='<span class="map-pin-badge">📍 '+(e.name||'Aluno')+'</span>';
     });
+    // Forçar Leaflet a recalcular tamanho (necessário após display:none)
+    setTimeout(()=>{ if(profMap) profMap.invalidateSize(); }, 150);
   },100);
 }
 
@@ -1022,8 +1037,26 @@ function showAlunoSlide(idx){
 function submitMap(slideId){
   if(!alunoMapCoords){ alert('Clique no mapa para marcar a localização da sua pesquisa.'); return; }
   if(answeredSlides.has(slideId)) return;
+  answeredSlides.add(slideId);
   sendResponse(slideId, alunoMapCoords);
-  document.getElementById('aluno-slide-content').insertAdjacentHTML('beforeend','<div class="submitted-msg">✓ Localização enviada!</div>');
+  // Desabilitar cliques no mapa sem destruí-lo
+  if(alunoMap){
+    alunoMap.off('click');
+    alunoMap.dragging.disable();
+    alunoMap.scrollWheelZoom.disable();
+  }
+  // Mostrar confirmação SEM substituir o mapa
+  const confirmBtn = document.querySelector('.submit-btn');
+  if(confirmBtn){
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = '✓ Localização confirmada!';
+    confirmBtn.style.background = 'var(--teal,#0d9488)';
+  }
+  const confirmMsg = document.getElementById('map-confirm-msg');
+  if(confirmMsg){
+    confirmMsg.textContent = '✓ Localização enviada com sucesso!';
+    confirmMsg.style.display = '';
+  }
 }
 
 
