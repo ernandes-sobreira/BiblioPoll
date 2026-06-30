@@ -495,9 +495,6 @@ function initProf(){
     document.getElementById('connected-count').textContent = '● ' + n + ' conectado' + (n!==1?'s':'');
   });
 
-  // Renderizar thumbs
-  renderThumbs();
-  showSlide(0);
   // Tipos extras para o editor
   TYPE_LABELS['map']='Mapa';
   TYPE_LABELS['perguntacientifica']='Pergunta científica';
@@ -508,6 +505,22 @@ function initProf(){
   // Mostrar botão editor
   const edBtn=document.getElementById('editor-open-btn');
   if(edBtn) edBtn.style.display='';
+
+  // Carregar slides salvos do Firebase (chave global — persiste entre sessões)
+  db.ref('bibliopoll/slides').once('value', snap => {
+    const saved = snap.val();
+    if(saved){
+      try{
+        const parsed = JSON.parse(saved);
+        if(Array.isArray(parsed) && parsed.length > 0){
+          SLIDES = parsed;
+          console.log('Slides carregados do Firebase:', SLIDES.length);
+        }
+      }catch(e){ console.warn('Erro ao carregar slides:', e); }
+    }
+    renderThumbs();
+    showSlide(0);
+  });
 }
 
 function renderThumbs(){
@@ -593,11 +606,35 @@ function joinRoom(){
   document.getElementById('aluno-enter').style.display = 'none';
   document.getElementById('aluno-waiting').style.display = '';
 
+  // Carregar slides atualizados do Firebase antes de escutar
+  db.ref('bibliopoll/slides').once('value', snap => {
+    const saved = snap.val();
+    if(saved){
+      try{
+        const parsed = JSON.parse(saved);
+        if(Array.isArray(parsed) && parsed.length > 0) SLIDES = parsed;
+      }catch(e){}
+    }
+    // Atualizar barra de progresso com total correto
+    document.getElementById('aluno-progress').innerHTML =
+      SLIDES.map((_,i) => '<div class="sp-dot"></div>').join('');
+  });
+
   // Escutar slide atual
   db.ref('rooms/' + roomCode + '/currentSlide').on('value', snap => {
     const idx = snap.val();
     if(idx === null || idx === undefined) return;
     showAlunoSlide(idx);
+  });
+
+  // Escutar atualizações de slides durante a sessão
+  db.ref('rooms/' + roomCode + '/slidesMeta').on('value', snap => {
+    const val = snap.val();
+    if(!val) return;
+    try{
+      const parsed = JSON.parse(val);
+      if(Array.isArray(parsed) && parsed.length > 0) SLIDES = parsed;
+    }catch(e){}
   });
 }
 
@@ -812,12 +849,14 @@ function applySlideEdit(){
 }
 
 function saveSlides(){
-  // Salvar no Firebase para que os alunos recebam a lista atualizada
-  db.ref('rooms/'+roomCode+'/slidesMeta').set(JSON.stringify(SLIDES));
+  // Salvar na chave global — persiste entre sessões e dispositivos
+  db.ref('bibliopoll/slides').set(JSON.stringify(SLIDES));
+  // Também salvar na sala atual para sincronizar alunos conectados agora
+  if(roomCode) db.ref('rooms/'+roomCode+'/slidesMeta').set(JSON.stringify(SLIDES));
   renderThumbs();
   closeEditor();
   showSlide(Math.min(currentSlide, SLIDES.length-1));
-  alert('Slides publicados para a turma!');
+  alert('✅ Slides salvos! Todos os dispositivos receberão a versão atualizada.');
 }
 
 // ─── RESULTADOS: MAPA ─────────────────────────────────────────────────────────
