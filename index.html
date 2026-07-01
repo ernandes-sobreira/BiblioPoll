@@ -316,7 +316,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
     <div class="prof-topbar">
       <div class="prof-topbar-title" id="prof-slide-title">—</div>
       <span class="responses-badge" id="responses-badge">0 respostas</span>
-      <button class="ctrl-btn" style="max-width:120px" onclick="clearResponses()">Limpar</button>
+      <button class="ctrl-btn" style="max-width:100px;font-size:11px" onclick="saveResultsLocal()" title="Salvar no localStorage">💾 Salvar</button>
+      <button class="ctrl-btn" style="max-width:90px;font-size:11px" onclick="exportResultsCSV()" title="Exportar CSV">⬇ CSV</button>
+      <button class="ctrl-btn" style="max-width:90px;font-size:11px" onclick="exportResultsJSON()" title="Exportar JSON">⬇ JSON</button>
+      <button class="ctrl-btn" style="max-width:100px;font-size:11px" onclick="clearResponses()">🗑 Limpar</button>
     </div>
     <div class="prof-view">
       <div class="prof-slide-preview">
@@ -375,7 +378,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
     <div id="aluno-enter" style="padding-top:2rem">
       <p style="font-size:13px;color:var(--ink3);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600">Seu nome</p>
       <div class="enter-room-form">
-        <input class="er-name-input" id="aluno-name-input" placeholder="Como você quer ser chamado?" maxlength="30">
+        <input class="er-name-input" id="aluno-name-input" placeholder="Como você quer ser chamado?" maxlength="60">
         <p style="font-size:13px;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;font-weight:600">Código da sala</p>
         <input class="er-input" id="room-code-input" placeholder="----" maxlength="4" oninput="this.value=this.value.toUpperCase()">
         <button class="er-btn" onclick="joinRoom()">Entrar na sala →</button>
@@ -909,7 +912,7 @@ function renderPQResult(entries, slide, area){
   const maxF=sorted[0]?sorted[0][1]:1;
   const colors=['#58a6ff','#bc8cff','#39d353','#e3b341','#f778ba','#e05c2a','#56d364'];
   const cloud=sorted.map(([w,f],i)=>`<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:${13+(f/maxF)*30}px;color:${colors[i%7]};padding:2px 4px">${w}</span>`).join('');
-  const resList=entries.slice(-10).reverse().map(e=>`<div class="pq-item"><strong>${e.name}:</strong> ${e.value}</div>`).join('');
+  const resList=entries.slice().reverse().map(e=>`<div class="pq-item"><strong>${e.name}:</strong> ${e.value}</div>`).join('');
   area.innerHTML=`<div class="pq-cloud">${cloud||'<span style="color:#8b949e;font-size:13px">Aguardando perguntas...</span>'}</div><div class="pq-responses">${resList}</div>`;
 }
 
@@ -922,7 +925,7 @@ function updateResults(snap, slide){
 
   // Feed ao vivo
   const feed=document.getElementById('live-feed-list');
-  const recent=entries.slice(-6).reverse();
+  const recent=entries.slice(-10).reverse();
   feed.innerHTML=recent.length?recent.map(e=>`<div class="lf-item"><div class="lf-dot"></div><span><strong>${e.name||'Aluno'}</strong>: ${typeof e.value==='object'?JSON.stringify(e.value).substring(0,40):String(e.value).substring(0,50)}</span></div>`).join(''):'<div class="lf-empty">Aguardando respostas...</div>';
 
   const area=document.getElementById('prof-result-area');
@@ -954,7 +957,7 @@ function updateResults(snap, slide){
     area.innerHTML=`<div class="wordcloud-display">${sorted.map(([w,f],i)=>`<span class="wc-word" style="font-size:${14+(f/maxF)*32}px;color:${colors[i%colors.length]}">${w}</span>`).join('')}</div>`;
   }
   else if(slide.type==='open'){
-    area.innerHTML=`<div class="open-responses">${entries.slice(-20).reverse().map(e=>`<div class="open-r-item"><strong>${e.name||'Aluno'}:</strong> ${e.value}</div>`).join('')||'<div class="lf-empty">Nenhuma resposta ainda.</div>'}</div>`;
+    area.innerHTML=`<div class="open-responses">${entries.slice().reverse().map(e=>`<div class="open-r-item"><strong>${e.name||'Aluno'}:</strong> ${e.value}</div>`).join('')||'<div class="lf-empty">Nenhuma resposta ainda.</div>'}</div>`;
   }
   else if(slide.type==='ranking'){
     const scores={};(slide.items||[]).forEach(it=>scores[it]=0);
@@ -987,7 +990,7 @@ function showAlunoSlide(idx){
     if(already) html+=`<div class="submitted-msg">✓ Localização enviada!</div>`;
   }
   else if(s.type==='perguntacientifica'){
-    html+=`<textarea class="open-input" id="open-inp" placeholder="${s.placeholder||'Qual é o efeito de... sobre... em...?'}" maxlength="250" ${already?'disabled':''}></textarea>
+    html+=`<textarea class="open-input" id="open-inp" placeholder="${s.placeholder||'Qual é o efeito de... sobre... em...?'}" maxlength="500" ${already?'disabled':''}></textarea>
            <button class="submit-btn" ${already?'disabled':''} onclick="submitOpen('${s.id}')">Enviar pergunta →</button>`;
     if(already) html+=`<div class="submitted-msg">✓ Pergunta enviada!</div>`;
   }
@@ -1003,11 +1006,11 @@ function showAlunoSlide(idx){
     if(already) html+=`<div class="submitted-msg">✓ Resposta enviada!</div>`;
   }
   else if(s.type==='wordcloud'){
-    html+=`<input class="wc-input" id="wc-inp" placeholder="${s.placeholder||'Uma palavra...'}" maxlength="30" ${already?'disabled':''}><div class="wc-hint">Apenas uma palavra ou expressão curta.</div><button class="submit-btn" ${already?'disabled':''} onclick="submitWC('${s.id}')">Enviar →</button>`;
+    html+=`<input class="wc-input" id="wc-inp" placeholder="${s.placeholder||'Uma palavra...'}" maxlength="60" ${already?'disabled':''}><div class="wc-hint">Apenas uma palavra ou expressão curta.</div><button class="submit-btn" ${already?'disabled':''} onclick="submitWC('${s.id}')">Enviar →</button>`;
     if(already) html+=`<div class="submitted-msg">✓ Enviado!</div>`;
   }
   else if(s.type==='open'){
-    html+=`<textarea class="open-input" id="open-inp" placeholder="${s.placeholder||'Sua resposta...'}" maxlength="200" ${already?'disabled':''}></textarea><button class="submit-btn" ${already?'disabled':''} onclick="submitOpen('${s.id}')">Enviar →</button>`;
+    html+=`<textarea class="open-input" id="open-inp" placeholder="${s.placeholder||'Sua resposta...'}" maxlength="500" ${already?'disabled':''}></textarea><button class="submit-btn" ${already?'disabled':''} onclick="submitOpen('${s.id}')">Enviar →</button>`;
     if(already) html+=`<div class="submitted-msg">✓ Resposta enviada! Aguarde o próximo slide.</div>`;
   }
   else if(s.type==='ranking'){
@@ -1059,6 +1062,84 @@ function submitMap(slideId){
   }
 }
 
+
+
+// ─── LOCALSTORAGE: SALVAR E CARREGAR RESULTADOS ──────────────────────────────
+const LS_KEY = 'biblioPoll_results';
+
+function saveResultsLocal(){
+  if(!roomCode) return;
+  // Snapshot das respostas atuais no Firebase → localStorage
+  db.ref('rooms/' + roomCode + '/responses').once('value', snap => {
+    const data = snap.val() || {};
+    const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    saved[roomCode] = {
+      ts: new Date().toISOString(),
+      slides: SLIDES.map(s => s.title),
+      responses: data
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(saved));
+    alert('✅ Resultados salvos localmente! ' + Object.keys(data).length + ' slide(s) com respostas.');
+  });
+}
+
+function exportResultsJSON(){
+  if(!roomCode){ alert('Abra uma sala primeiro.'); return; }
+  db.ref('rooms/' + roomCode + '/responses').once('value', snap => {
+    const data = snap.val() || {};
+    const output = {
+      sala: roomCode,
+      exportado_em: new Date().toLocaleString('pt-BR'),
+      slides: SLIDES.map((s,i) => ({
+        numero: i+1,
+        tipo: s.type,
+        pergunta: s.title,
+        respostas: Object.values(data[s.id] || {}).map(e => ({nome: e.name, resposta: e.value}))
+      }))
+    };
+    const blob = new Blob([JSON.stringify(output, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'biblioPoll_sala_' + roomCode + '_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+}
+
+function exportResultsCSV(){
+  if(!roomCode){ alert('Abra uma sala primeiro.'); return; }
+  db.ref('rooms/' + roomCode + '/responses').once('value', snap => {
+    const data = snap.val() || {};
+    let csv = 'Slide,Pergunta,Nome,Resposta\n';
+    SLIDES.forEach((s,i) => {
+      const resps = Object.values(data[s.id] || {});
+      if(!resps.length){
+        csv += (i+1) + ',"' + s.title.replace(/"/g,'""') + '","—","—"\n';
+      } else {
+        resps.forEach(e => {
+          const val = Array.isArray(e.value) ? e.value.join(' > ') : String(e.value || '');
+          csv += (i+1) + ',"' + s.title.replace(/"/g,'""') + '","' + (e.name||'').replace(/"/g,'""') + '","' + val.replace(/"/g,'""') + '"\n';
+        });
+      }
+    });
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'biblioPoll_sala_' + roomCode + '_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+}
+
+function viewSavedResults(){
+  const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+  const keys = Object.keys(saved);
+  if(!keys.length){ alert('Nenhum resultado salvo localmente.'); return; }
+  const list = keys.map(k => k + ' — ' + saved[k].ts + ' (' + Object.keys(saved[k].responses||{}).length + ' slides)').join('\n');
+  alert('Resultados salvos:\n\n' + list);
+}
 
 // ─── URL PARAMS (QR code leva direto ao aluno) ───────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
