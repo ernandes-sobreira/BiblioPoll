@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>BiblioPoll · Sala Ecologia Viva | PROFBIO UFMT 06/11/2026</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d1117;--sf:#161b22;--sf2:#21262d;--bd:#30363d;
+  --ink:#f0f6fc;--ink2:#c9d1d9;--ink3:#8b949e;
+  --acc:#e05c2a;--blue:#58a6ff;--teal:#39d353;--violet:#bc8cff;
+  --amber:#e3b341;--green:#56d364;--pink:#f778ba;
+  --r:12px;--rs:7px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* SCREENS */
+.screen{display:none;min-height:100vh}
+.screen.active{display:flex;flex-direction:column}
+
+/* ── ENTRY SCREEN ─────────────────────────────────────────── */
+#screen-entry{align-items:center;justify-content:center;padding:2rem;background:radial-gradient(ellipse at 30% 20%,rgba(88,166,255,.08) 0%,transparent 60%),var(--bg)}
+.entry-card{background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:3rem 2.5rem;max-width:440px;width:100%;text-align:center}
+.entry-logo{display:inline-flex;align-items:center;gap:.6rem;margin-bottom:2rem}
+.e-icon{width:42px;height:42px;background:var(--acc);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#fff}
+.e-name{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--ink);letter-spacing:-.3px}
+.entry-card h1{font-family:'Space Grotesk',sans-serif;font-size:24px;font-weight:700;color:var(--ink);margin-bottom:.4rem;letter-spacing:-.5px}
+.entry-card p{font-size:13.5px;color:var(--ink3);margin-bottom:2rem;line-height:1.6}
+.role-btns{display:flex;flex-direction:column;gap:.8rem}
+.role-btn{padding:1rem 1.5rem;border-radius:var(--rs);border:1px solid var(--bd);background:var(--sf2);cursor:pointer;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--ink);transition:all .15s;text-align:left;display:flex;align-items:center;gap:.8rem}
+.role-btn:hover{border-color:var(--acc);background:rgba(224,92,42,.08)}
+.role-btn .rb-icon{font-size:1.4rem}
+.role-btn .rb-text strong{display:block;margin-bottom:1px}
+.role-btn .rb-text span{font-size:12px;color:var(--ink3);font-weight:400}
+
+/* ── PROFESSOR SCREEN ─────────────────────────────────────── */
+#screen-prof{flex-direction:row;height:100vh;overflow:hidden}
+.prof-sidebar{width:280px;min-width:280px;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;height:100vh;overflow-y:auto}
+.prof-sidebar::-webkit-scrollbar{width:3px}.prof-sidebar::-webkit-scrollbar-thumb{background:var(--bd)}
+.prof-header{padding:1.2rem 1.4rem;border-bottom:1px solid var(--bd)}
+.prof-brand{display:flex;align-items:center;gap:.6rem;margin-bottom:.8rem}
+.prof-brand .e-icon{width:28px;height:28px;font-size:11px}
+.prof-brand .e-name{font-size:13px}
+.room-badge{background:rgba(224,92,42,.15);border:1px solid rgba(224,92,42,.3);border-radius:6px;padding:.4rem .8rem;display:flex;align-items:center;justify-content:space-between}
+.room-code{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--acc);letter-spacing:2px}
+.room-label{font-size:10px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.connected-count{font-family:'DM Mono',monospace;font-size:12px;color:var(--teal);margin-top:.5rem}
+
+.qr-section{padding:1rem 1.4rem;border-bottom:1px solid var(--bd);text-align:center}
+.qr-section p{font-size:11px;color:var(--ink3);margin-bottom:.6rem;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+#qr-container{display:inline-block;background:#fff;padding:8px;border-radius:8px}
+.qr-url{font-size:10px;color:var(--ink3);margin-top:.4rem;word-break:break-all;font-family:'DM Mono',monospace}
+
+.slides-nav{padding:.8rem;flex:1}
+.slides-nav-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);padding:.3rem .5rem;margin-bottom:.4rem}
+.slide-thumb{display:flex;align-items:flex-start;gap:.6rem;padding:.6rem .7rem;border-radius:6px;cursor:pointer;transition:all .12s;border:1px solid transparent}
+.slide-thumb:hover{background:var(--sf2)}
+.slide-thumb.active{background:var(--sf2);border-color:var(--acc)}
+.slide-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink3);min-width:18px;margin-top:2px}
+.slide-info .st{font-size:12px;font-weight:600;color:var(--ink);line-height:1.3}
+.slide-info .sq{font-size:11px;color:var(--ink3);line-height:1.3;margin-top:2px}
+.slide-type-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:1px 5px;border-radius:3px;margin-top:3px;display:inline-block}
+
+.prof-controls{padding:1rem 1.4rem;border-top:1px solid var(--bd);display:flex;gap:.6rem}
+.ctrl-btn{flex:1;padding:.6rem;border-radius:6px;border:1px solid var(--bd);background:var(--sf2);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s}
+.ctrl-btn:hover{background:var(--bd)}
+.ctrl-btn.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+.ctrl-btn.primary:hover{background:#c04820}
+
+.prof-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.prof-topbar{height:52px;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 1.5rem;gap:1rem;flex-shrink:0}
+.prof-topbar-title{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;color:var(--ink);flex:1}
+.responses-badge{background:rgba(57,211,83,.15);border:1px solid rgba(57,211,83,.3);color:var(--teal);font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;font-family:'DM Mono',monospace}
+
+.prof-view{flex:1;overflow:auto;padding:2rem;display:flex;gap:1.5rem;align-items:flex-start}
+.prof-slide-preview{flex:1;min-width:0}
+.prof-slide-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:2rem;margin-bottom:1rem}
+.slide-eyebrow{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem}
+.slide-question{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--ink);line-height:1.3;margin-bottom:1.5rem;letter-spacing:-.3px}
+.chart-wrap{background:var(--bg);border-radius:8px;padding:1rem}
+.wordcloud-display{min-height:200px;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:center;padding:1rem}
+.wc-word{font-family:'Space Grotesk',sans-serif;font-weight:600;transition:all .3s;cursor:default}
+.open-responses{display:flex;flex-direction:column;gap:.5rem;max-height:300px;overflow-y:auto}
+.open-r-item{background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:.6rem .9rem;font-size:13px;color:var(--ink2);line-height:1.5;animation:slideIn .3s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.scale-display{display:flex;align-items:flex-end;gap:.4rem;height:140px}
+.scale-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:.3rem;flex:1}
+.scale-bar{width:100%;border-radius:4px 4px 0 0;transition:height .4s ease;min-height:2px}
+.scale-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--ink3)}
+.scale-cnt{font-size:11px;color:var(--ink2);font-weight:600}
+.avg-display{font-family:'Space Grotesk',sans-serif;font-size:48px;font-weight:700;color:var(--acc);margin-top:.5rem}
+.avg-lbl{font-size:13px;color:var(--ink3)}
+
+.ranking-display{display:flex;flex-direction:column;gap:.5rem}
+.rank-item{display:flex;align-items:center;gap:.8rem;padding:.6rem .9rem;background:var(--bg);border-radius:6px;border:1px solid var(--bd)}
+.rank-pos{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;width:24px;text-align:center}
+.rank-text{flex:1;font-size:13px;color:var(--ink2)}
+.rank-votes{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink3)}
+
+/* Live feed */
+.live-feed{width:240px;min-width:240px}
+.live-feed-card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:1rem}
+.lf-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);margin-bottom:.7rem}
+.lf-item{display:flex;align-items:flex-start;gap:.5rem;padding:.4rem 0;border-bottom:1px solid var(--bd);font-size:12px;color:var(--ink2);animation:slideIn .3s ease}
+.lf-item:last-child{border-bottom:none}
+.lf-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);flex-shrink:0;margin-top:4px}
+.lf-empty{font-size:12px;color:var(--ink3);font-style:italic}
+.timer-display{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:1rem;margin-top:1rem;text-align:center}
+.timer-num{font-family:'Space Grotesk',sans-serif;font-size:36px;font-weight:700;color:var(--amber);line-height:1}
+.timer-lbl{font-size:11px;color:var(--ink3);margin-top:2px}
+.timer-btns{display:flex;gap:.4rem;margin-top:.6rem}
+.tbtn{flex:1;padding:.4rem;border-radius:5px;border:1px solid var(--bd);background:var(--sf2);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer}
+.tbtn:hover{background:var(--bd)}
+
+/* ── ALUNO SCREEN ─────────────────────────────────────────── */
+#screen-aluno{align-items:stretch;justify-content:flex-start;background:var(--bg);min-height:100vh}
+.aluno-header{background:var(--sf);border-bottom:1px solid var(--bd);padding:.8rem 1.2rem;display:flex;align-items:center;justify-content:space-between}
+.aluno-brand{display:flex;align-items:center;gap:.5rem}
+.aluno-brand .e-icon{width:28px;height:28px;font-size:11px}
+.aluno-brand .e-name{font-size:13px}
+.aluno-room{font-family:'DM Mono',monospace;font-size:12px;color:var(--acc);font-weight:600}
+
+.aluno-body{flex:1;padding:1.5rem;max-width:520px;margin:0 auto;width:100%}
+.aluno-waiting{text-align:center;padding:4rem 1rem}
+.aluno-waiting .w-icon{font-size:3rem;margin-bottom:.8rem;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.6;transform:scale(.95)}50%{opacity:1;transform:scale(1.05)}}
+.aluno-waiting h2{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:var(--ink);margin-bottom:.4rem}
+.aluno-waiting p{font-size:13px;color:var(--ink3)}
+
+.aluno-slide{display:none}
+.aluno-slide.active{display:block}
+.slide-progress{display:flex;gap:4px;margin-bottom:1.2rem}
+.sp-dot{height:3px;border-radius:2px;flex:1;background:var(--bd);transition:background .3s}
+.sp-dot.done{background:var(--acc)}
+.sp-dot.active{background:var(--blue)}
+
+.aluno-q-eyebrow{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--acc);margin-bottom:.5rem}
+.aluno-q-text{font-family:'Space Grotesk',sans-serif;font-size:19px;font-weight:700;color:var(--ink);line-height:1.35;margin-bottom:1.5rem;letter-spacing:-.3px}
+
+/* MC options */
+.mc-options{display:flex;flex-direction:column;gap:.7rem}
+.mc-opt{padding:1rem 1.2rem;border-radius:var(--rs);border:2px solid var(--bd);background:var(--sf);cursor:pointer;font-size:14px;font-weight:500;color:var(--ink2);transition:all .15s;display:flex;align-items:center;gap:.7rem}
+.mc-opt:hover{border-color:var(--blue);color:var(--ink)}
+.mc-opt.selected{border-color:var(--acc);background:rgba(224,92,42,.1);color:var(--ink)}
+.mc-opt.disabled{cursor:default;opacity:.6}
+.mc-opt .opt-letter{width:28px;height:28px;border-radius:50%;background:var(--sf2);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:700;flex-shrink:0}
+.mc-opt.selected .opt-letter{background:var(--acc);color:#fff}
+
+/* Scale */
+.scale-opts{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;margin-bottom:.8rem}
+.scale-opt{width:52px;height:52px;border-radius:8px;border:2px solid var(--bd);background:var(--sf);cursor:pointer;font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;color:var(--ink2);display:flex;align-items:center;justify-content:center;transition:all .15s}
+.scale-opt:hover{border-color:var(--blue)}
+.scale-opt.selected{border-color:var(--acc);background:rgba(224,92,42,.15);color:var(--acc)}
+.scale-opt.disabled{cursor:default;opacity:.6}
+.scale-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-bottom:1rem;padding:0 .2rem}
+
+/* Open text */
+.open-input{width:100%;background:var(--sf);border:2px solid var(--bd);border-radius:var(--rs);padding:.9rem 1rem;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);outline:none;resize:none;min-height:100px;line-height:1.55;transition:border-color .15s}
+.open-input:focus{border-color:var(--blue)}
+
+/* Word cloud input */
+.wc-input{width:100%;background:var(--sf);border:2px solid var(--bd);border-radius:var(--rs);padding:.9rem 1rem;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--ink);outline:none;transition:border-color .15s;margin-bottom:.6rem}
+.wc-input:focus{border-color:var(--blue)}
+.wc-hint{font-size:12px;color:var(--ink3);margin-bottom:1rem}
+
+/* Ranking drag */
+.rank-drag{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem}
+.rank-drag-item{display:flex;align-items:center;gap:.7rem;padding:.8rem 1rem;background:var(--sf);border:2px solid var(--bd);border-radius:var(--rs);cursor:grab;font-size:13.5px;font-weight:500;color:var(--ink);transition:all .15s;user-select:none}
+.rank-drag-item:active{cursor:grabbing;border-color:var(--blue);background:var(--sf2)}
+.rank-drag-item.dragging{opacity:.5}
+.rank-drag-item.over{border-color:var(--acc)}
+.rank-handle{color:var(--ink3);font-size:1rem}
+.rank-idx{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;width:20px;color:var(--acc)}
+
+/* Submit */
+.submit-btn{width:100%;padding:1rem;border-radius:var(--rs);border:none;background:var(--acc);color:#fff;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;margin-top:1rem;letter-spacing:-.2px}
+.submit-btn:hover{background:#c04820}
+.submit-btn:disabled{opacity:.5;cursor:default}
+.submitted-msg{text-align:center;padding:1.5rem;background:rgba(57,211,83,.1);border:1px solid rgba(57,211,83,.3);border-radius:var(--rs);color:var(--teal);font-weight:600;margin-top:1rem}
+
+/* ENTER ROOM */
+.enter-room-form{display:flex;flex-direction:column;gap:1rem;margin-bottom:1.5rem}
+.er-input{background:var(--sf);border:2px solid var(--bd);border-radius:var(--rs);padding:.9rem 1rem;font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--ink);outline:none;text-align:center;letter-spacing:6px;transition:border-color .15s;text-transform:uppercase}
+.er-input:focus{border-color:var(--acc)}
+.er-btn{padding:1rem;border-radius:var(--rs);border:none;background:var(--acc);color:#fff;font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s}
+.er-btn:hover{background:#c04820}
+.er-name-input{background:var(--sf);border:2px solid var(--bd);border-radius:var(--rs);padding:.8rem 1rem;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);outline:none;text-align:center;transition:border-color .15s}
+.er-name-input:focus{border-color:var(--blue)}
+
+/* FINISHED */
+.finished-screen{text-align:center;padding:3rem 1rem}
+.finished-screen .f-icon{font-size:3rem;margin-bottom:.8rem}
+.finished-screen h2{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;color:var(--ink);margin-bottom:.4rem}
+.finished-screen p{font-size:13px;color:var(--ink3)}
+
+
+/* EDITOR DE SLIDES */
+.editor-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:600;align-items:flex-start;justify-content:center;padding:2rem;overflow-y:auto}
+.editor-overlay.open{display:flex}
+.editor-card{background:#161b22;border:1px solid #30363d;border-radius:14px;width:100%;max-width:680px;padding:2rem}
+.editor-card h2{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#f0f6fc;margin-bottom:1.5rem}
+.editor-form{display:flex;flex-direction:column;gap:1rem}
+.ef-row{display:flex;gap:.8rem;flex-wrap:wrap}
+.ef-field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:180px}
+.ef-field label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#8b949e}
+.ef-field input,.ef-field select,.ef-field textarea{background:#21262d;border:1px solid #30363d;border-radius:6px;padding:.6rem .8rem;font-family:'DM Sans',sans-serif;font-size:13.5px;color:#f0f6fc;outline:none;transition:border-color .12s}
+.ef-field input:focus,.ef-field select:focus,.ef-field textarea:focus{border-color:#58a6ff}
+.ef-field textarea{min-height:70px;resize:vertical;line-height:1.5}
+.options-editor{display:flex;flex-direction:column;gap:.4rem;margin-top:.3rem}
+.opt-row{display:flex;gap:.4rem;align-items:center}
+.opt-row input{flex:1;background:#21262d;border:1px solid #30363d;border-radius:5px;padding:.45rem .7rem;font-family:'DM Sans',sans-serif;font-size:13px;color:#f0f6fc;outline:none}
+.opt-row input:focus{border-color:#58a6ff}
+.opt-del{background:transparent;border:1px solid #30363d;color:#8b949e;border-radius:5px;padding:0 .5rem;height:30px;cursor:pointer;font-size:14px}
+.opt-del:hover{background:#f851491a;border-color:#f85149;color:#f85149}
+.ed-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1rem;flex-wrap:wrap}
+.ed-btn{padding:.55rem 1.1rem;border-radius:6px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s}
+.ed-btn-sec{background:#21262d;color:#c9d1d9;border:1px solid #30363d}.ed-btn-sec:hover{background:#30363d}
+.ed-btn-pri{background:#e05c2a;color:#fff}.ed-btn-pri:hover{background:#c04820}
+.ed-btn-dan{background:#f851491a;color:#f85149;border:1px solid #f8514940}.ed-btn-dan:hover{background:#f851493a}
+/* SLIDES LIST */
+.slides-list{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem}
+.sl-item{display:flex;align-items:center;gap:.5rem;padding:.5rem .7rem;background:#21262d;border:1px solid #30363d;border-radius:6px;cursor:pointer;transition:all .12s}
+.sl-item:hover{border-color:#58a6ff}
+.sl-num{font-family:'DM Mono',monospace;font-size:11px;color:#8b949e;width:20px}
+.sl-type{font-size:9px;font-weight:700;text-transform:uppercase;padding:1px 5px;border-radius:3px}
+.sl-title{flex:1;font-size:12px;color:#c9d1d9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sl-actions{display:flex;gap:.3rem}
+.sl-btn{background:transparent;border:1px solid #30363d;color:#8b949e;border-radius:4px;padding:2px 6px;font-size:11px;cursor:pointer}
+.sl-btn:hover{background:#30363d;color:#f0f6fc}
+.add-slide-btn{width:100%;padding:.6rem;border-radius:6px;border:1px dashed #30363d;background:transparent;color:#58a6ff;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .12s}
+.add-slide-btn:hover{background:#58a6ff1a;border-color:#58a6ff}
+.editor-open-btn{position:fixed;bottom:1.2rem;right:1.2rem;background:#e05c2a;color:#fff;border:none;border-radius:50%;width:52px;height:52px;font-size:1.4rem;cursor:pointer;box-shadow:0 4px 16px rgba(224,92,42,.4);z-index:300;transition:all .15s}
+.editor-open-btn:hover{background:#c04820;transform:scale(1.08)}
+/* MAPA */
+#map-container{height:340px;border-radius:8px;overflow:hidden;margin-top:.5rem;z-index:1}
+.map-pins-list{margin-top:.8rem;display:flex;flex-wrap:wrap;gap:.4rem}
+.map-pin-badge{font-size:11px;padding:3px 8px;border-radius:12px;background:rgba(57,211,83,.15);border:1px solid rgba(57,211,83,.3);color:#39d353;font-weight:600}
+/* PERGUNTA CIENTÍFICA */
+.pq-cloud{min-height:200px;display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;justify-content:center;padding:1rem;background:#0d1117;border-radius:8px}
+.pq-responses{max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:.4rem;margin-top:.8rem}
+.pq-item{background:#161b22;border:1px solid #30363d;border-radius:6px;padding:.5rem .8rem;font-size:12px;color:#c9d1d9;line-height:1.5}
+/* ALUNO MAPA */
+#aluno-map{height:300px;border-radius:8px;overflow:hidden;margin-bottom:.8rem;z-index:1}
+.map-confirm-msg{background:rgba(57,211,83,.1);border:1px solid rgba(57,211,83,.3);border-radius:6px;padding:.7rem 1rem;font-size:13px;color:#39d353;font-weight:600;margin-bottom:.8rem;display:none}
+
+/* RESPONSIVE */
+@media(max-width:700px){
+  #screen-prof{flex-direction:column}
+  .prof-sidebar{width:100%;height:auto;min-width:unset;border-right:none;border-bottom:1px solid var(--bd)}
+  .prof-view{flex-direction:column}
+  .live-feed{width:100%;min-width:unset}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ ENTRY SCREEN ══════════════════════════════════════════════════════════ -->
+<div class="screen active" id="screen-entry">
+  <div class="entry-card">
+    <div class="entry-logo">
+      <div class="e-icon">BP</div>
+      <div class="e-name">BiblioPoll</div>
+    </div>
+    <h1>Ecologia Viva · PROFBIO</h1>
+    <p>Do indivíduo ao ecossistema · UFMT · 6 de novembro de 2026<br>Uma sala exclusiva de investigação ecológica.</p>
+    <div class="role-btns">
+      <button class="role-btn" onclick="goProf()">
+        <span class="rb-icon">👨‍🏫</span>
+        <div class="rb-text"><strong>Professor</strong><span>Projete e controle os slides ao vivo</span></div>
+      </button>
+      <button class="role-btn" onclick="goAluno()">
+        <span class="rb-icon">👩‍🎓</span>
+        <div class="rb-text"><strong>Aluno</strong><span>Entre com o código da sala</span></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROFESSOR SCREEN ══════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-prof">
+  <div class="prof-sidebar">
+    <div class="prof-header">
+      <div class="prof-brand">
+        <div class="e-icon">BP</div>
+        <div class="e-name">BiblioPoll</div>
+      </div>
+      <div class="room-badge">
+        <div><div class="room-label">Código da sala</div><div class="room-code" id="room-code-display">----</div></div>
+      </div>
+      <div class="connected-count" id="connected-count">● 0 conectados</div>
+    </div>
+    <div class="qr-section">
+      <p>Alunos escaneiam</p>
+      <div id="qr-container"></div>
+      <div class="qr-url" id="qr-url-text"></div>
+    </div>
+    <div class="slides-nav">
+      <div class="slides-nav-title">Slides</div>
+      <div id="slides-thumbs"></div>
+    </div>
+    <div class="prof-controls">
+      <button class="ctrl-btn" onclick="prevSlide()">← Anterior</button>
+      <button class="ctrl-btn primary" onclick="nextSlide()">Próximo →</button>
+    </div>
+  </div>
+
+  <div class="prof-main">
+    <div class="prof-topbar">
+      <div class="prof-topbar-title" id="prof-slide-title">—</div>
+      <span class="responses-badge" id="responses-badge">0 respostas</span>
+      <button class="ctrl-btn" style="max-width:100px;font-size:11px" onclick="saveResultsLocal()" title="Salvar no localStorage">💾 Salvar</button>
+      <button class="ctrl-btn" style="max-width:90px;font-size:11px" onclick="exportResultsCSV()" title="Exportar CSV">⬇ CSV</button>
+      <button class="ctrl-btn" style="max-width:90px;font-size:11px" onclick="exportResultsJSON()" title="Exportar JSON">⬇ JSON</button>
+      <button class="ctrl-btn" style="max-width:100px;font-size:11px" onclick="clearResponses()">🗑 Limpar</button>
+    </div>
+    <div class="prof-view">
+      <div class="prof-slide-preview">
+        <div class="prof-slide-card">
+          <div class="slide-eyebrow" id="prof-eyebrow"></div>
+          <div class="slide-question" id="prof-question"></div>
+          <div id="prof-result-area"></div>
+        </div>
+      </div>
+      <div class="live-feed">
+        <div class="live-feed-card">
+          <div class="lf-title">Feed ao vivo</div>
+          <div id="live-feed-list"><div class="lf-empty">Aguardando respostas...</div></div>
+        </div>
+        <div class="timer-display">
+          <div class="timer-num" id="timer-num">60</div>
+          <div class="timer-lbl">segundos</div>
+          <div class="timer-btns">
+            <button class="tbtn" onclick="startTimer()">▶ Start</button>
+            <button class="tbtn" onclick="stopTimer()">■ Stop</button>
+            <button class="tbtn" onclick="resetTimer()">↺ Reset</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EDITOR OVERLAY ═══════════════════════════════════════════════════════ -->
+<div class="editor-overlay" id="editor-overlay">
+  <div class="editor-card">
+    <h2>✏️ Editor de slides</h2>
+    <div class="slides-list" id="editor-slides-list"></div>
+    <button class="add-slide-btn" onclick="addNewSlide()">+ Adicionar slide</button>
+    <div id="slide-form-area" style="margin-top:1.2rem;display:none">
+      <div style="height:1px;background:#30363d;margin-bottom:1.2rem"></div>
+      <div class="editor-form" id="slide-edit-form"></div>
+    </div>
+    <div class="ed-actions">
+      <button class="ed-btn ed-btn-sec" onclick="closeEditor()">Fechar</button>
+      <button class="ed-btn ed-btn-pri" onclick="saveSlides()">💾 Salvar e publicar</button>
+    </div>
+  </div>
+</div>
+<button class="editor-open-btn" id="editor-open-btn" style="display:none" onclick="openEditor()" title="Editar slides">✏️</button>
+
+<!-- ══ ALUNO SCREEN ══════════════════════════════════════════════════════════ -->
+<div class="screen" id="screen-aluno">
+  <div class="aluno-header">
+    <div class="aluno-brand"><div class="e-icon">BP</div><div class="e-name">BiblioPoll</div></div>
+    <div class="aluno-room" id="aluno-room-display"></div>
+  </div>
+  <div class="aluno-body">
+
+    <!-- Enter room -->
+    <div id="aluno-enter" style="padding-top:2rem">
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.08em;font-weight:600">Seu nome</p>
+      <div class="enter-room-form">
+        <input class="er-name-input" id="aluno-name-input" placeholder="Como você quer ser chamado?" maxlength="60">
+        <p style="font-size:13px;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;font-weight:600">Código da sala</p>
+        <input class="er-input" id="room-code-input" placeholder="----" maxlength="4" oninput="this.value=this.value.toUpperCase()">
+        <button class="er-btn" onclick="joinRoom()">Entrar na sala →</button>
+      </div>
+      <div id="enter-error" style="color:#f85149;font-size:13px;display:none;text-align:center"></div>
+    </div>
+
+    <!-- Waiting -->
+    <div id="aluno-waiting" class="aluno-waiting" style="display:none">
+      <div class="w-icon">⏳</div>
+      <h2>Aguardando o professor...</h2>
+      <p>O slide aparecerá aqui automaticamente.</p>
+    </div>
+
+    <!-- Slides -->
+    <div id="aluno-slides-area" style="display:none">
+      <div class="slide-progress" id="aluno-progress"></div>
+      <div id="aluno-slide-content"></div>
+    </div>
+
+    <!-- Finished -->
+    <div id="aluno-finished" class="finished-screen" style="display:none">
+      <div class="f-icon">🎉</div>
+      <h2>Obrigado pela participação!</h2>
+      <p>Acompanhe os resultados na tela do professor.</p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── FIREBASE CONFIG (profagua-unemat) ────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyC57nv10U000jgQeB2v2CJQmO_VRObOJdA",
+  authDomain: "biblio-meter.firebaseapp.com",
+  databaseURL: "https://biblio-meter-default-rtdb.firebaseio.com",
+  projectId: "biblio-meter",
+  storageBucket: "biblio-meter.firebasestorage.app",
+  messagingSenderId: "296996227210",
+  appId: "1:296996227210:web:473d8d447991209ea08573",
+  measurementId: "G-TSD6EHBEGK"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ─── SLIDES DATA ──────────────────────────────────────────────────────────────
+// Slides carregados do Firebase ou padrão
+let SLIDES = [
+  {
+    "id": "eco01",
+    "type": "wordcloud",
+    "eyebrow": "ABERTURA · A visão que trazemos",
+    "title": "Quando você pensa em Ecologia, qual é a primeira palavra que vem à sua cabeça?",
+    "color": "#58a6ff",
+    "placeholder": "Uma palavra ou expressão curta"
+  },
+  {
+    "id": "eco02",
+    "type": "mc",
+    "eyebrow": "DIAGNÓSTICO · Dinâmica populacional",
+    "title": "Uma população tem 12 nascimentos, 8 mortes, 1 imigração e 9 emigrações. O saldo é:",
+    "color": "#bc8cff",
+    "options": [
+      "Diminui 4 indivíduos",
+      "Aumenta 4 indivíduos",
+      "Fica estável",
+      "Diminui 12 indivíduos"
+    ]
+  },
+  {
+    "id": "eco03",
+    "type": "mc",
+    "eyebrow": "DIAGNÓSTICO · Diversidade",
+    "title": "Duas lagoas apresentam 10 espécies cada. Uma delas é dominada por uma só espécie. Qual afirmação é defensável?",
+    "color": "#e3b341",
+    "options": [
+      "Têm a mesma riqueza; podem ter diversidades diferentes",
+      "Têm necessariamente a mesma diversidade",
+      "A lagoa dominada tem maior riqueza",
+      "Não é possível comparar riqueza sem medir biomassa"
+    ]
+  },
+  {
+    "id": "eco04",
+    "type": "mc",
+    "eyebrow": "DIAGNÓSTICO · Nicho e habitat",
+    "title": "Qual frase distingue melhor habitat de nicho ecológico?",
+    "color": "#39d353",
+    "options": [
+      "Habitat é onde vive; nicho envolve condições, recursos e interações",
+      "Habitat é a dieta; nicho é o endereço",
+      "Nicho e habitat são sinônimos",
+      "Nicho é apenas a posição na cadeia alimentar"
+    ]
+  },
+  {
+    "id": "eco05",
+    "type": "scale",
+    "eyebrow": "DIAGNÓSTICO · Autopercepção",
+    "title": "De 1 a 10: quanto você se sente preparado para investigar Ecologia com dados e experimentos em sua escola?",
+    "color": "#e3b341",
+    "min": 1,
+    "max": 10,
+    "minLabel": "Nada preparado",
+    "maxLabel": "Muito preparado"
+  },
+  {
+    "id": "eco06",
+    "type": "open",
+    "eyebrow": "DIAGNÓSTICO · Hipóteses",
+    "title": "Escreva uma hipótese ecológica TESTÁVEL relacionada ao Pantanal ou ao município onde você ensina.",
+    "color": "#39d353",
+    "placeholder": "Se ... então ... porque ..."
+  },
+  {
+    "id": "eco07",
+    "type": "ranking",
+    "eyebrow": "ESCALAS · Organização ecológica",
+    "title": "Ordene do nível menos abrangente ao mais abrangente.",
+    "color": "#f778ba",
+    "items": [
+      "Organismo",
+      "População",
+      "Comunidade",
+      "Ecossistema"
+    ]
+  },
+  {
+    "id": "eco08",
+    "type": "mc",
+    "eyebrow": "ESCALAS · Propriedades emergentes",
+    "title": "Qual propriedade se refere necessariamente a uma população, e não a um organismo isolado?",
+    "color": "#bc8cff",
+    "options": [
+      "Taxa de crescimento populacional",
+      "Massa corporal",
+      "Temperatura individual",
+      "Fenótipo de uma planta"
+    ]
+  },
+  {
+    "id": "eco09",
+    "type": "map",
+    "eyebrow": "ESCALAS · Contexto local",
+    "title": "No mapa, marque aproximadamente uma área da sua região que pode ser usada para investigar um processo ecológico.",
+    "color": "#39d353"
+  },
+  {
+    "id": "eco10",
+    "type": "mc",
+    "eyebrow": "POPULAÇÕES · Crescimento",
+    "title": "Em um modelo de crescimento discreto, se N(t+1) = 1,2 × N(t), a população:",
+    "color": "#58a6ff",
+    "options": [
+      "Cresce 20% por intervalo, enquanto o fator permanecer igual",
+      "Cresce exatamente 1,2 indivíduos",
+      "Permanece estável",
+      "Diminui 20% por intervalo"
+    ]
+  },
+  {
+    "id": "eco11",
+    "type": "open",
+    "eyebrow": "POPULAÇÕES · Investigação",
+    "title": "Como você diferenciaria, em campo, uma queda populacional causada por mortalidade de outra causada por emigração?",
+    "color": "#39d353",
+    "placeholder": "Que dados coletaria? Qual escala e frequência de amostragem?"
+  },
+  {
+    "id": "eco12",
+    "type": "mc",
+    "eyebrow": "COMUNIDADES · Teias tróficas",
+    "title": "Se um grande predador desaparece, o que podemos prever com maior rigor?",
+    "color": "#bc8cff",
+    "options": [
+      "Podem ocorrer efeitos diretos e indiretos, dependentes da teia e do contexto",
+      "Todas as presas sempre aumentam",
+      "A produtividade primária necessariamente aumenta",
+      "Nada muda se a riqueza for mantida"
+    ]
+  },
+  {
+    "id": "eco13",
+    "type": "wordcloud",
+    "eyebrow": "COMUNIDADES · Interações",
+    "title": "Cite uma interação ecológica que você consegue observar perto de sua escola.",
+    "color": "#58a6ff",
+    "placeholder": "Ex.: predação, mutualismo, competição..."
+  },
+  {
+    "id": "eco14",
+    "type": "mc",
+    "eyebrow": "PAISAGEM · Dispersão e conectividade",
+    "title": "O que pode acontecer quando fragmentos de habitat passam a ser conectados?",
+    "color": "#e3b341",
+    "options": [
+      "A dispersão e o fluxo gênico podem aumentar, com efeitos que variam por espécie",
+      "Todas as espécies necessariamente aumentam",
+      "A competição deixa de existir",
+      "A conectividade não influencia a dinâmica populacional"
+    ]
+  },
+  {
+    "id": "eco15",
+    "type": "open",
+    "eyebrow": "PERTURBAÇÕES · Fogo e seca",
+    "title": "Uma seca extrema seguida de fogo atinge uma paisagem. Descreva uma consequência em CADA nível: organismo, população e comunidade.",
+    "color": "#39d353",
+    "placeholder": "Organismo: ... | População: ... | Comunidade: ..."
+  },
+  {
+    "id": "eco16",
+    "type": "mc",
+    "eyebrow": "PERTURBAÇÕES · Sucessão",
+    "title": "Após fogo em um campo natural, o que determina a trajetória de recuperação?",
+    "color": "#bc8cff",
+    "options": [
+      "Regime do fogo, espécies presentes, propágulos, clima e história do ambiente",
+      "Sempre a mesma sequência fixa de espécies",
+      "Apenas a chuva do mês seguinte",
+      "Somente a riqueza original"
+    ]
+  },
+  {
+    "id": "eco17",
+    "type": "mc",
+    "eyebrow": "CONSERVAÇÃO · Evidências",
+    "title": "Qual desenho de investigação gera evidência mais forte de que uma intervenção de conservação funcionou?",
+    "color": "#58a6ff",
+    "options": [
+      "Monitoramento antes/depois com áreas comparáveis de controle",
+      "Uma fotografia após a intervenção",
+      "Opinião dos participantes sem medidas",
+      "Uma observação isolada em um único dia"
+    ]
+  },
+  {
+    "id": "eco18",
+    "type": "open",
+    "eyebrow": "JOGO · Decisão científica",
+    "title": "Sua equipe tem recursos para UMA ação: proteger habitat, restaurar conectividade ou reduzir uma pressão local. Qual escolheria e com que evidência?",
+    "color": "#39d353",
+    "placeholder": "Escolha, hipótese, variável de resposta e prazo de monitoramento"
+  },
+  {
+    "id": "eco19",
+    "type": "mc",
+    "eyebrow": "ENCERRAMENTO · Revisão de dinâmica populacional",
+    "title": "Agora: 20 nascimentos, 15 mortes, 2 imigrações e 10 emigrações. Qual é a variação da população?",
+    "color": "#bc8cff",
+    "options": [
+      "Diminui 3 indivíduos",
+      "Aumenta 3 indivíduos",
+      "Aumenta 7 indivíduos",
+      "Não muda"
+    ]
+  },
+  {
+    "id": "eco20",
+    "type": "mc",
+    "eyebrow": "ENCERRAMENTO · Revisão de diversidade",
+    "title": "Duas comunidades com igual riqueza de espécies apresentam necessariamente a mesma diversidade?",
+    "color": "#e3b341",
+    "options": [
+      "Não: a equitabilidade pode ser diferente",
+      "Sim: riqueza e diversidade são medidas idênticas",
+      "Sim: se estão no mesmo bioma",
+      "Não: porque a riqueza nunca pode ser igual"
+    ]
+  },
+  {
+    "id": "eco21",
+    "type": "scale",
+    "eyebrow": "ENCERRAMENTO · Autopercepção",
+    "title": "Depois das atividades: de 1 a 10, quanto você se sente preparado para investigar Ecologia com dados e experimentos em sua escola?",
+    "color": "#39d353",
+    "min": 1,
+    "max": 10,
+    "minLabel": "Nada preparado",
+    "maxLabel": "Muito preparado"
+  },
+  {
+    "id": "eco22",
+    "type": "open",
+    "eyebrow": "ENCERRAMENTO · Transferência para a escola",
+    "title": "Que atividade prática de Ecologia você aplicaria na educação básica já na próxima semana? Indique hipótese, dados e discussão.",
+    "color": "#58a6ff",
+    "placeholder": "Fenômeno local + hipótese + coleta + interpretação"
+  },
+  {
+    "id": "eco23",
+    "type": "open",
+    "eyebrow": "ENCERRAMENTO · Pensamento científico",
+    "title": "Qual resultado ou evidência faria você rever uma conclusão que tirou hoje?",
+    "color": "#39d353",
+    "placeholder": "O que precisaria observar ou testar?"
+  }
+];
+
+const TYPE_LABELS = {
+  wordcloud:'Nuvem', mc:'Múltipla escolha', scale:'Escala', open:'Resposta aberta', ranking:'Ranking'
+};
+const TYPE_COLORS = {
+  wordcloud:'rgba(88,166,255,.2)', mc:'rgba(188,140,255,.2)', scale:'rgba(227,179,65,.2)',
+  open:'rgba(57,211,83,.2)', ranking:'rgba(247,120,186,.2)'
+};
+const TYPE_FG = {
+  wordcloud:'#58a6ff', mc:'#bc8cff', scale:'#e3b341', open:'#39d353', ranking:'#f778ba'
+};
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let role = null;
+let roomCode = null;
+let currentSlide = 0;
+let alunoName = '';
+let alunoId = null;
+let responsesRef = null;
+let slideRef = null;
+let timerInterval = null;
+let timerSec = 60;
+let _charts = {};
+let answeredSlides = new Set();
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+function goProf(){ role='prof'; showScreen('prof'); initProf(); }
+function goAluno(){ role='aluno'; showScreen('aluno'); }
+
+// ─── PROFESSOR ────────────────────────────────────────────────────────────────
+function initProf(){
+  // Gerar código de 4 letras
+  roomCode = 'ECO6'; // sala fixa exclusiva PROFBIO
+  document.getElementById('room-code-display').textContent = roomCode;
+
+  // QR Code
+  const url = window.location.href.split('?')[0] + '?room=' + roomCode;
+  document.getElementById('qr-url-text').textContent = url;
+  new QRCode(document.getElementById('qr-container'), {
+    text: url, width:110, height:110,
+    colorDark:'#1b3557', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M
+  });
+
+  // Firebase refs
+  slideRef = db.ref('rooms/' + roomCode + '/currentSlide');
+  slideRef.set(0);
+
+  // Escutar conectados
+  db.ref('rooms/' + roomCode + '/users').on('value', snap => {
+    const n = snap.numChildren();
+    document.getElementById('connected-count').textContent = '● ' + n + ' conectado' + (n!==1?'s':'');
+  });
+
+  // Tipos extras para o editor
+  TYPE_LABELS['map']='Mapa';
+  TYPE_LABELS['perguntacientifica']='Pergunta científica';
+  TYPE_COLORS['map']='rgba(57,211,83,.2)';
+  TYPE_COLORS['perguntacientifica']='rgba(188,140,255,.2)';
+  TYPE_FG['map']='#39d353';
+  TYPE_FG['perguntacientifica']='#bc8cff';
+  // Mostrar botão editor
+  const edBtn=document.getElementById('editor-open-btn');
+  if(edBtn) edBtn.style.display='';
+
+  // Carregar slides exclusivos da sala PROFBIO sem alterar o BiblioPoll global
+  db.ref('rooms/ECO6/slidesConfig').once('value', snap => {
+    const saved = snap.val();
+    if(saved){
+      try{
+        const parsed = JSON.parse(saved);
+        if(Array.isArray(parsed) && parsed.length > 0){
+          SLIDES = parsed;
+          console.log('Slides carregados do Firebase:', SLIDES.length);
+        }
+      }catch(e){ console.warn('Erro ao carregar slides:', e); }
+    }
+    renderThumbs();
+    showSlide(0);
+  });
+}
+
+function renderThumbs(){
+  document.getElementById('slides-thumbs').innerHTML = SLIDES.map((s,i) => `
+    <div class="slide-thumb ${i===currentSlide?'active':''}" onclick="showSlide(${i})" id="thumb-${i}">
+      <span class="slide-num">${i+1}</span>
+      <div class="slide-info">
+        <div class="slide-type-badge" style="background:${TYPE_COLORS[s.type]};color:${TYPE_FG[s.type]}">${TYPE_LABELS[s.type]}</div>
+        <div class="sq">${s.title.substring(0,55)}${s.title.length>55?'…':''}</div>
+      </div>
+    </div>`).join('');
+}
+
+function showSlide(idx){
+  currentSlide = idx;
+  const s = SLIDES[idx];
+
+  // Destruir mapa do professor ao trocar de slide (evita container órfão)
+  if(profMap && !document.getElementById('map-container')){
+    try{ profMap.remove(); }catch(e){}
+    profMap=null; profMarkers=[];
+  }
+
+  // Atualizar Firebase
+  if(slideRef) slideRef.set(idx);
+  db.ref('rooms/' + roomCode + '/slideData/' + s.id).set(s);
+
+  // Atualizar sidebar
+  document.querySelectorAll('.slide-thumb').forEach((el,i) => el.classList.toggle('active', i===idx));
+
+  // Atualizar topbar
+  document.getElementById('prof-slide-title').textContent = (idx+1) + '/' + SLIDES.length + ' — ' + s.eyebrow;
+
+  // Atualizar preview
+  document.getElementById('prof-eyebrow').textContent = s.eyebrow;
+  document.getElementById('prof-eyebrow').style.color = s.color;
+  document.getElementById('prof-question').textContent = s.title;
+
+  // Escutar respostas
+  if(responsesRef) responsesRef.off();
+  responsesRef = db.ref('rooms/' + roomCode + '/responses/' + s.id);
+  responsesRef.on('value', snap => updateResults(snap, s));
+
+  renderThumbs();
+  resetTimer();
+}
+
+function nextSlide(){ if(currentSlide < SLIDES.length-1) showSlide(currentSlide+1); }
+function prevSlide(){ if(currentSlide > 0) showSlide(currentSlide-1); }
+
+function clearResponses(){
+  if(!confirm('Limpar respostas deste slide?')) return;
+  db.ref('rooms/' + roomCode + '/responses/' + SLIDES[currentSlide].id).remove();
+}
+
+// ─── RESULTS DISPLAY ─────────────────────────────────────────────────────────
+
+
+// ─── TIMER ────────────────────────────────────────────────────────────────────
+function startTimer(){
+  if(timerInterval) return;
+  timerInterval = setInterval(()=>{
+    timerSec--;
+    document.getElementById('timer-num').textContent = timerSec;
+    if(timerSec<=10) document.getElementById('timer-num').style.color='#f85149';
+    else document.getElementById('timer-num').style.color='#e3b341';
+    if(timerSec<=0){ stopTimer(); }
+  }, 1000);
+}
+function stopTimer(){ clearInterval(timerInterval); timerInterval=null; }
+function resetTimer(){ stopTimer(); timerSec=60; document.getElementById('timer-num').textContent=60; document.getElementById('timer-num').style.color='#e3b341'; }
+
+// ─── ALUNO ────────────────────────────────────────────────────────────────────
+function joinRoom(){
+  const code = document.getElementById('room-code-input').value.trim().toUpperCase();
+  const name = document.getElementById('aluno-name-input').value.trim();
+  if(!name){ showError('Informe seu nome.'); return; }
+  if(code.length !== 4){ showError('Código inválido. 4 letras.'); return; }
+
+  roomCode = code;
+  alunoName = name;
+  alunoId = Math.random().toString(36).substring(2,10);
+
+  // Registrar presença
+  db.ref('rooms/' + roomCode + '/users/' + alunoId).set({name, ts: Date.now()});
+  db.ref('rooms/' + roomCode + '/users/' + alunoId).onDisconnect().remove();
+
+  document.getElementById('aluno-room-display').textContent = 'Sala ' + roomCode;
+  document.getElementById('aluno-enter').style.display = 'none';
+  document.getElementById('aluno-waiting').style.display = '';
+
+  // Carregar slides atualizados do Firebase antes de escutar
+  db.ref('rooms/ECO6/slidesConfig').once('value', snap => {
+    const saved = snap.val();
+    if(saved){
+      try{
+        const parsed = JSON.parse(saved);
+        if(Array.isArray(parsed) && parsed.length > 0) SLIDES = parsed;
+      }catch(e){}
+    }
+    // Atualizar barra de progresso com total correto
+    document.getElementById('aluno-progress').innerHTML =
+      SLIDES.map((_,i) => '<div class="sp-dot"></div>').join('');
+  });
+
+  // Escutar slide atual
+  db.ref('rooms/' + roomCode + '/currentSlide').on('value', snap => {
+    const idx = snap.val();
+    if(idx === null || idx === undefined) return;
+    showAlunoSlide(idx);
+  });
+
+  // Escutar atualizações de slides durante a sessão
+  db.ref('rooms/' + roomCode + '/slidesMeta').on('value', snap => {
+    const val = snap.val();
+    if(!val) return;
+    try{
+      const parsed = JSON.parse(val);
+      if(Array.isArray(parsed) && parsed.length > 0) SLIDES = parsed;
+    }catch(e){}
+  });
+}
+
+function showError(msg){
+  const el = document.getElementById('enter-error');
+  el.textContent = msg; el.style.display = '';
+  setTimeout(()=>el.style.display='none', 3000);
+}
+
+
+
+// ─── SUBMIT HELPERS ───────────────────────────────────────────────────────────
+function sendResponse(slideId, value){
+  answeredSlides.add(slideId);
+  db.ref('rooms/' + roomCode + '/responses/' + slideId + '/' + alunoId).set({
+    name: alunoName, value, ts: Date.now()
+  });
+}
+
+function submitMC(el, slideId, value){
+  if(answeredSlides.has(slideId)) return;
+  document.querySelectorAll('.mc-opt').forEach(o=>o.classList.add('disabled'));
+  el.classList.add('selected');
+  sendResponse(slideId, value);
+  setTimeout(()=>{
+    el.closest('.aluno-slide') || document.getElementById('aluno-slide-content').insertAdjacentHTML('beforeend',
+      '<div class="submitted-msg">✓ Resposta enviada! Aguarde o próximo slide.</div>');
+  }, 100);
+}
+
+let selectedScale = null;
+function submitScale(el, slideId, val){
+  if(answeredSlides.has(slideId)) return;
+  document.querySelectorAll('.scale-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedScale = val;
+  document.getElementById('scale-submit').style.display='';
+}
+function doSubmitScale(slideId){
+  if(!selectedScale || answeredSlides.has(slideId)) return;
+  document.querySelectorAll('.scale-opt').forEach(o=>o.classList.add('disabled'));
+  document.getElementById('scale-submit').disabled=true;
+  sendResponse(slideId, selectedScale);
+  document.getElementById('aluno-slide-content').insertAdjacentHTML('beforeend',
+    '<div class="submitted-msg">✓ Resposta enviada! Aguarde o próximo slide.</div>');
+}
+
+function submitWC(slideId){
+  const val = document.getElementById('wc-inp').value.trim();
+  if(!val){ alert('Digite uma palavra.'); return; }
+  if(answeredSlides.has(slideId)) return;
+  document.getElementById('wc-inp').disabled=true;
+  sendResponse(slideId, val);
+  document.getElementById('aluno-slide-content').insertAdjacentHTML('beforeend',
+    '<div class="submitted-msg">✓ Enviado! Veja sua palavra na nuvem.</div>');
+}
+
+function submitOpen(slideId){
+  const val = document.getElementById('open-inp').value.trim();
+  if(!val){ alert('Escreva sua resposta.'); return; }
+  if(answeredSlides.has(slideId)) return;
+  document.getElementById('open-inp').disabled=true;
+  sendResponse(slideId, val);
+  document.getElementById('aluno-slide-content').insertAdjacentHTML('beforeend',
+    '<div class="submitted-msg">✓ Resposta enviada! Aguarde o próximo slide.</div>');
+}
+
+// Ranking drag-and-drop
+let dragSrc = null;
+function dragStart(e){ dragSrc=e.currentTarget; e.currentTarget.classList.add('dragging') }
+function dragOver(e){ e.preventDefault(); e.currentTarget.classList.add('over') }
+function dropItem(e){
+  e.preventDefault();
+  const list=document.getElementById('rank-list');
+  if(dragSrc!==e.currentTarget){
+    const items=[...list.children];
+    const srcIdx=items.indexOf(dragSrc), tgtIdx=items.indexOf(e.currentTarget);
+    if(srcIdx<tgtIdx) list.insertBefore(dragSrc,e.currentTarget.nextSibling);
+    else list.insertBefore(dragSrc,e.currentTarget);
+  }
+  e.currentTarget.classList.remove('over');
+  dragSrc.classList.remove('dragging');
+  // Atualizar índices
+  [...document.getElementById('rank-list').children].forEach((el,i)=>el.querySelector('.rank-idx').textContent=i+1);
+}
+
+function submitRanking(slideId){
+  const items=[...document.getElementById('rank-list').children].map(el=>el.dataset.item);
+  if(answeredSlides.has(slideId)) return;
+  document.querySelectorAll('.rank-drag-item').forEach(el=>{el.draggable=false;el.style.cursor='default'});
+  sendResponse(slideId, items);
+  document.getElementById('aluno-slide-content').insertAdjacentHTML('beforeend',
+    '<div class="submitted-msg">✓ Ranking enviado! Aguarde o próximo slide.</div>');
+}
+
+
+// ─── EDITOR DE SLIDES ─────────────────────────────────────────────────────────
+let editingIdx = null;
+
+function openEditor(){
+  renderEditorList();
+  document.getElementById('slide-form-area').style.display='none';
+  document.getElementById('editor-overlay').classList.add('open');
+}
+function closeEditor(){ document.getElementById('editor-overlay').classList.remove('open'); editingIdx=null; }
+
+function renderEditorList(){
+  document.getElementById('editor-slides-list').innerHTML = SLIDES.map((s,i)=>`
+    <div class="sl-item">
+      <span class="sl-num">${i+1}</span>
+      <span class="sl-type" style="background:${TYPE_COLORS[s.type]};color:${TYPE_FG[s.type]}">${TYPE_LABELS[s.type]}</span>
+      <span class="sl-title">${s.title}</span>
+      <div class="sl-actions">
+        <button class="sl-btn" onclick="editSlide(${i})" title="Editar">✏️</button>
+        <button class="sl-btn" onclick="moveSlide(${i},-1)" title="Subir">↑</button>
+        <button class="sl-btn" onclick="moveSlide(${i},1)" title="Descer">↓</button>
+        <button class="sl-btn" onclick="deleteSlide(${i})" title="Remover" style="color:#f85149">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function moveSlide(i, dir){
+  const j=i+dir;
+  if(j<0||j>=SLIDES.length) return;
+  [SLIDES[i],SLIDES[j]]=[SLIDES[j],SLIDES[i]];
+  renderEditorList();
+}
+
+function deleteSlide(i){
+  if(!confirm('Remover este slide?')) return;
+  SLIDES.splice(i,1);
+  renderEditorList();
+}
+
+function addNewSlide(){
+  SLIDES.push({id:'s'+Date.now(),type:'open',eyebrow:'Nova pergunta',title:'Nova pergunta',color:'#58a6ff',placeholder:'Responda aqui...'});
+  editSlide(SLIDES.length-1);
+  renderEditorList();
+}
+
+function editSlide(i){
+  editingIdx=i;
+  const s=SLIDES[i];
+  const area=document.getElementById('slide-form-area');
+  area.style.display='';
+
+  const typeOpts=['wordcloud','mc','scale','open','ranking','map','perguntacientifica']
+    .map(t=>`<option value="${t}" ${s.type===t?'selected':''}>${TYPE_LABELS[t]||t}</option>`).join('');
+
+  let extra='';
+  if(s.type==='mc'||s.type==='ranking'){
+    const items=s.options||s.items||[];
+    extra=`<div class="ef-field" style="width:100%"><label>Opções (uma por linha)</label>
+      <div class="options-editor" id="opts-editor">
+        ${items.map((o,j)=>`<div class="opt-row"><input value="${o}" oninput="updateOpt(${j},this.value)"><button class="opt-del" onclick="removeOpt(${j})">×</button></div>`).join('')}
+      </div>
+      <button class="add-slide-btn" style="margin-top:.4rem" onclick="addOpt()">+ Opção</button>
+    </div>`;
+  }
+  if(s.type==='scale'){
+    extra=`<div class="ef-row">
+      <div class="ef-field"><label>Mínimo</label><input type="number" id="ef-min" value="${s.min||1}"></div>
+      <div class="ef-field"><label>Máximo</label><input type="number" id="ef-max" value="${s.max||10}"></div>
+      <div class="ef-field"><label>Label mínimo</label><input id="ef-minlbl" value="${s.minLabel||''}"></div>
+      <div class="ef-field"><label>Label máximo</label><input id="ef-maxlbl" value="${s.maxLabel||''}"></div>
+    </div>`;
+  }
+
+  document.getElementById('slide-edit-form').innerHTML=`
+    <div class="ef-row">
+      <div class="ef-field"><label>Tipo</label><select id="ef-type" onchange="editSlide(${i})">${typeOpts}</select></div>
+      <div class="ef-field"><label>Cor</label><input type="color" id="ef-color" value="${s.color||'#58a6ff'}" style="height:36px;padding:2px 4px"></div>
+    </div>
+    <div class="ef-field"><label>Eyebrow (subtítulo)</label><input id="ef-eyebrow" value="${s.eyebrow||''}"></div>
+    <div class="ef-field"><label>Pergunta / enunciado</label><textarea id="ef-title">${s.title||''}</textarea></div>
+    ${s.type==='open'||s.type==='wordcloud'||s.type==='perguntacientifica'?`<div class="ef-field"><label>Placeholder</label><input id="ef-placeholder" value="${s.placeholder||''}"></div>`:''}
+    ${extra}
+    <div class="ed-actions" style="justify-content:flex-start">
+      <button class="ed-btn ed-btn-pri" onclick="applySlideEdit()">Aplicar alterações</button>
+      <button class="ed-btn ed-btn-dan" onclick="deleteSlide(${i});closeEditor()">Excluir slide</button>
+    </div>`;
+
+  // Atualizar tipo ao mudar select
+  document.getElementById('ef-type').addEventListener('change',()=>{
+    SLIDES[editingIdx].type=document.getElementById('ef-type').value;
+    editSlide(editingIdx);
+  });
+}
+
+let _editOpts=[];
+function updateOpt(j,v){ _editOpts[j]=v; }
+function removeOpt(j){ _editOpts.splice(j,1); const s=SLIDES[editingIdx]; s.options=s.items=_editOpts.slice(); editSlide(editingIdx); }
+function addOpt(){ _editOpts.push('Nova opção'); const s=SLIDES[editingIdx]; s.options=s.items=_editOpts.slice(); editSlide(editingIdx); }
+
+function applySlideEdit(){
+  if(editingIdx===null) return;
+  const s=SLIDES[editingIdx];
+  s.type=document.getElementById('ef-type').value;
+  s.color=document.getElementById('ef-color').value;
+  s.eyebrow=document.getElementById('ef-eyebrow').value;
+  s.title=document.getElementById('ef-title').value;
+  if(document.getElementById('ef-placeholder')) s.placeholder=document.getElementById('ef-placeholder').value;
+  if(document.getElementById('ef-min')) s.min=parseInt(document.getElementById('ef-min').value)||1;
+  if(document.getElementById('ef-max')) s.max=parseInt(document.getElementById('ef-max').value)||10;
+  if(document.getElementById('ef-minlbl')) s.minLabel=document.getElementById('ef-minlbl').value;
+  if(document.getElementById('ef-maxlbl')) s.maxLabel=document.getElementById('ef-maxlbl').value;
+  // Opções
+  const opts=[...document.querySelectorAll('#opts-editor input')].map(i=>i.value).filter(Boolean);
+  if(opts.length){ s.options=opts; s.items=opts; }
+  renderEditorList();
+  alert('Alterações aplicadas! Clique em "Salvar e publicar" para enviar à turma.');
+}
+
+function saveSlides(){
+  // Salvar apenas na sala ECO6; não modifica slides das outras disciplinas
+  db.ref('rooms/ECO6/slidesConfig').set(JSON.stringify(SLIDES));
+  // Também salvar na sala atual para sincronizar alunos conectados agora
+  if(roomCode) db.ref('rooms/'+roomCode+'/slidesMeta').set(JSON.stringify(SLIDES));
+  renderThumbs();
+  closeEditor();
+  showSlide(Math.min(currentSlide, SLIDES.length-1));
+  alert('✅ Slides salvos! Todos os dispositivos receberão a versão atualizada.');
+}
+
+// ─── RESULTADOS: MAPA ─────────────────────────────────────────────────────────
+let profMap=null, profMarkers=[];
+
+function renderMapResult(entries, slide, area){
+  // Só recriar o HTML se o container não existir ainda
+  if(!document.getElementById('map-container')){
+    area.innerHTML=`<div id="map-container" style="height:340px;border-radius:8px;overflow:hidden;margin-top:.5rem;z-index:1"></div><div class="map-pins-list" id="map-pins"></div>`;
+    // Destruir instância anterior se existir
+    if(profMap){ profMap.remove(); profMap=null; profMarkers=[]; }
+  }
+  setTimeout(()=>{
+    // Inicializar mapa só se ainda não existe
+    if(!profMap){
+      profMap=L.map('map-container').setView([-15,-55],4);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(profMap);
+    }
+    // Limpar markers antigos e redesenhar
+    profMarkers.forEach(m=>profMap.removeLayer(m));
+    profMarkers=[];
+    const pins=document.getElementById('map-pins');
+    if(pins) pins.innerHTML='';
+    entries.forEach(e=>{
+      if(!e.value||!e.value.lat) return;
+      const m=L.marker([e.value.lat,e.value.lng]).addTo(profMap)
+        .bindPopup('<strong>'+(e.name||'Aluno')+'</strong><br>'+(e.value.label||''));
+      profMarkers.push(m);
+      if(pins) pins.innerHTML+='<span class="map-pin-badge">📍 '+(e.name||'Aluno')+'</span>';
+    });
+    // Forçar Leaflet a recalcular tamanho (necessário após display:none)
+    setTimeout(()=>{ if(profMap) profMap.invalidateSize(); }, 150);
+  },100);
+}
+
+// ─── RESULTADOS: PERGUNTA CIENTÍFICA ─────────────────────────────────────────
+const STOPWORDS=new Set(['o','a','os','as','de','da','do','das','dos','em','para','com','por','uma','um','é','na','no','nas','nos','se','sua','seu','suas','seus','ao','à','pela','pelo','entre','foi','são','mais','como','também','sobre','quando','bem','que','e','ou','mas','não','já','este','esta','estes','estas','isso','esse','essa','esses','essas','qual','quais','como','onde','porque','pois','então','há','ter','ser','estar','tem','têm','foi','eram','será','pode','podem','deve','devem','quais','qual','efeito','efeitos','relação','entre','sobre','análise','avaliação','estudo','investigação','impacto','impactos','influência','papel']);
+
+function renderPQResult(entries, slide, area){
+  const allText=entries.map(e=>String(e.value||'')).join(' ');
+  const words=allText.toLowerCase().replace(/[^a-záàâãéèêíïóôõöúçñ\s]/g,'').split(/\s+/).filter(w=>w.length>2&&!STOPWORDS.has(w));
+  const freq={};words.forEach(w=>{freq[w]=(freq[w]||0)+1});
+  const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,35);
+  const maxF=sorted[0]?sorted[0][1]:1;
+  const colors=['#58a6ff','#bc8cff','#39d353','#e3b341','#f778ba','#e05c2a','#56d364'];
+  const cloud=sorted.map(([w,f],i)=>`<span style="font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:${13+(f/maxF)*30}px;color:${colors[i%7]};padding:2px 4px">${w}</span>`).join('');
+  const resList=entries.slice().reverse().map(e=>`<div class="pq-item"><strong>${e.name}:</strong> ${e.value}</div>`).join('');
+  area.innerHTML=`<div class="pq-cloud">${cloud||'<span style="color:#8b949e;font-size:13px">Aguardando perguntas...</span>'}</div><div class="pq-responses">${resList}</div>`;
+}
+
+// ─── PATCH updateResults para novos tipos ─────────────────────────────────────
+function updateResults(snap, slide){
+  const data=snap.val()||{};
+  const entries=Object.values(data);
+  const n=entries.length;
+  document.getElementById('responses-badge').textContent=n+' resposta'+(n!==1?'s':'');
+
+  // Feed ao vivo
+  const feed=document.getElementById('live-feed-list');
+  const recent=entries.slice(-10).reverse();
+  feed.innerHTML=recent.length?recent.map(e=>`<div class="lf-item"><div class="lf-dot"></div><span><strong>${e.name||'Aluno'}</strong>: ${typeof e.value==='object'?JSON.stringify(e.value).substring(0,40):String(e.value).substring(0,50)}</span></div>`).join(''):'<div class="lf-empty">Aguardando respostas...</div>';
+
+  const area=document.getElementById('prof-result-area');
+  if(slide.type==='map'){ renderMapResult(entries,slide,area); return; }
+  if(slide.type==='perguntacientifica'){ renderPQResult(entries,slide,area); return; }
+
+  // Demais tipos — chamar original (re-implementar inline para evitar recursão)
+  if(slide.type==='mc'){
+    const counts={};(slide.options||[]).forEach(o=>counts[o]=0);
+    entries.forEach(e=>{if(counts[e.value]!==undefined)counts[e.value]++});
+    const labels=(slide.options||[]).map(o=>o.length>30?o.slice(0,28)+'…':o);
+    const vals=(slide.options||[]).map(o=>counts[o]);
+    area.innerHTML='<div class="chart-wrap"><canvas id="result-chart" height="200"></canvas></div>';
+    if(_ch.result)_ch.result.destroy();
+    _ch.result=new Chart(document.getElementById('result-chart'),{type:'bar',data:{labels,datasets:[{data:vals,backgroundColor:slide.color+'99',borderColor:slide.color,borderWidth:2,borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+  }
+  else if(slide.type==='scale'){
+    const buckets={};for(let v=slide.min;v<=slide.max;v++)buckets[v]=0;
+    entries.forEach(e=>{const v=parseInt(e.value);if(buckets[v]!==undefined)buckets[v]++});
+    const vals=Object.values(buckets),maxV=Math.max(...vals,1);
+    const avg=entries.length?(entries.reduce((s,e)=>s+parseInt(e.value),0)/entries.length).toFixed(1):'—';
+    area.innerHTML=`<div class="scale-display">${Object.keys(buckets).map(k=>`<div class="scale-bar-wrap"><div class="scale-cnt">${buckets[k]||''}</div><div class="scale-bar" style="height:${Math.max(4,(buckets[k]/maxV)*110)}px;background:${slide.color}99"></div><div class="scale-lbl">${k}</div></div>`).join('')}</div><div class="avg-display">${avg}</div><div class="avg-lbl">média · ${n} resposta${n!==1?'s':''}</div>`;
+  }
+  else if(slide.type==='wordcloud'){
+    const freq={};entries.forEach(e=>{const w=String(e.value).toLowerCase().trim();if(w)freq[w]=(freq[w]||0)+1});
+    const sorted=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,40);
+    const maxF=sorted[0]?sorted[0][1]:1;
+    const colors=['#58a6ff','#bc8cff','#39d353','#e3b341','#f778ba','#e05c2a','#56d364'];
+    area.innerHTML=`<div class="wordcloud-display">${sorted.map(([w,f],i)=>`<span class="wc-word" style="font-size:${14+(f/maxF)*32}px;color:${colors[i%colors.length]}">${w}</span>`).join('')}</div>`;
+  }
+  else if(slide.type==='open'){
+    area.innerHTML=`<div class="open-responses">${entries.slice().reverse().map(e=>`<div class="open-r-item"><strong>${e.name||'Aluno'}:</strong> ${e.value}</div>`).join('')||'<div class="lf-empty">Nenhuma resposta ainda.</div>'}</div>`;
+  }
+  else if(slide.type==='ranking'){
+    const scores={};(slide.items||[]).forEach(it=>scores[it]=0);
+    entries.forEach(e=>{if(Array.isArray(e.value))e.value.forEach((it,pos)=>{if(scores[it]!==undefined)scores[it]+=(slide.items.length-pos)})});
+    const ranked=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+    area.innerHTML=`<div class="ranking-display">${ranked.map(([it,sc],i)=>`<div class="rank-item"><span class="rank-pos">${['🥇','🥈','🥉','4','5'][i]||i+1}</span><span class="rank-text">${it}</span><span class="rank-votes">${sc}pts</span></div>`).join('')}</div>`;
+  }
+}
+
+// ─── ALUNO: NOVOS TIPOS ───────────────────────────────────────────────────────
+let alunoMap=null, alunoMarker=null, alunoMapCoords=null;
+
+function showAlunoSlide(idx){
+  // Destruir mapa anterior se existir
+  if(alunoMap){ alunoMap.remove(); alunoMap=null; alunoMarker=null; alunoMapCoords=null; }
+
+  const s=SLIDES[idx];
+  document.getElementById('aluno-waiting').style.display='none';
+  document.getElementById('aluno-finished').style.display='none';
+  document.getElementById('aluno-slides-area').style.display='';
+  document.getElementById('aluno-progress').innerHTML=SLIDES.map((_,i)=>`<div class="sp-dot ${i<idx?'done':i===idx?'active':''}"></div>`).join('');
+
+  const already=answeredSlides.has(s.id);
+  let html=`<div class="aluno-q-eyebrow" style="color:${s.color}">${s.eyebrow}</div><div class="aluno-q-text">${s.title}</div>`;
+
+  if(s.type==='map'){
+    html+=`<div class="map-confirm-msg" id="map-confirm-msg">📍 Localização marcada! Clique em "Confirmar" para enviar.</div>
+           <div id="aluno-map"></div>
+           <button class="submit-btn" ${already?'disabled':''} onclick="submitMap('${s.id}')">Confirmar localização →</button>`;
+    if(already) html+=`<div class="submitted-msg">✓ Localização enviada!</div>`;
+  }
+  else if(s.type==='perguntacientifica'){
+    html+=`<textarea class="open-input" id="open-inp" placeholder="${s.placeholder||'Qual é o efeito de... sobre... em...?'}" maxlength="500" ${already?'disabled':''}></textarea>
+           <button class="submit-btn" ${already?'disabled':''} onclick="submitOpen('${s.id}')">Enviar pergunta →</button>`;
+    if(already) html+=`<div class="submitted-msg">✓ Pergunta enviada!</div>`;
+  }
+  else if(s.type==='mc'){
+    const letters='ABCDE';
+    html+=`<div class="mc-options">${(s.options||[]).map((o,i)=>`<div class="mc-opt ${already?'disabled':''}" onclick="submitMC(this,'${s.id}','${o.replace(/'/g,"\\'")}')" ><div class="opt-letter">${letters[i]}</div>${o}</div>`).join('')}</div>`;
+    if(already) html+=`<div class="submitted-msg">✓ Resposta enviada! Aguarde o próximo slide.</div>`;
+  }
+  else if(s.type==='scale'){
+    html+=`<div class="scale-labels"><span>${s.minLabel||''}</span><span>${s.maxLabel||''}</span></div><div class="scale-opts">`;
+    for(let v=s.min;v<=s.max;v++) html+=`<div class="scale-opt ${already?'disabled':''}" onclick="submitScale(this,'${s.id}',${v})">${v}</div>`;
+    html+=`</div><button class="submit-btn" id="scale-submit" style="display:none" onclick="doSubmitScale('${s.id}')">Enviar →</button>`;
+    if(already) html+=`<div class="submitted-msg">✓ Resposta enviada!</div>`;
+  }
+  else if(s.type==='wordcloud'){
+    html+=`<input class="wc-input" id="wc-inp" placeholder="${s.placeholder||'Uma palavra...'}" maxlength="60" ${already?'disabled':''}><div class="wc-hint">Apenas uma palavra ou expressão curta.</div><button class="submit-btn" ${already?'disabled':''} onclick="submitWC('${s.id}')">Enviar →</button>`;
+    if(already) html+=`<div class="submitted-msg">✓ Enviado!</div>`;
+  }
+  else if(s.type==='open'){
+    html+=`<textarea class="open-input" id="open-inp" placeholder="${s.placeholder||'Sua resposta...'}" maxlength="500" ${already?'disabled':''}></textarea><button class="submit-btn" ${already?'disabled':''} onclick="submitOpen('${s.id}')">Enviar →</button>`;
+    if(already) html+=`<div class="submitted-msg">✓ Resposta enviada! Aguarde o próximo slide.</div>`;
+  }
+  else if(s.type==='ranking'){
+    html+=`<div class="rank-drag" id="rank-list">`;
+    (s.items||s.options||[]).forEach((it,i)=>{html+=`<div class="rank-drag-item" draggable="${!already}" data-item="${it}" ondragstart="dragStart(event)" ondragover="dragOver(event)" ondrop="dropItem(event)"><span class="rank-handle">⠿</span><span class="rank-idx">${i+1}</span><span>${it}</span></div>`;});
+    html+=`</div><button class="submit-btn" ${already?'disabled':''} onclick="submitRanking('${s.id}')">Confirmar ordem →</button>`;
+    if(already) html+=`<div class="submitted-msg">✓ Ranking enviado!</div>`;
+  }
+
+  document.getElementById('aluno-slide-content').innerHTML=html;
+
+  // Inicializar mapa Leaflet no aluno
+  if(s.type==='map'&&!already){
+    setTimeout(()=>{
+      alunoMap=L.map('aluno-map').setView([-15,-55],4);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM'}).addTo(alunoMap);
+      alunoMap.on('click',function(e){
+        if(alunoMarker) alunoMap.removeLayer(alunoMarker);
+        alunoMarker=L.marker(e.latlng).addTo(alunoMap).bindPopup(alunoName||'Minha pesquisa').openPopup();
+        alunoMapCoords={lat:e.latlng.lat,lng:e.latlng.lng,label:alunoName};
+        document.getElementById('map-confirm-msg').style.display='';
+      });
+    },150);
+  }
+}
+
+function submitMap(slideId){
+  if(!alunoMapCoords){ alert('Clique no mapa para marcar a localização da sua pesquisa.'); return; }
+  if(answeredSlides.has(slideId)) return;
+  answeredSlides.add(slideId);
+  sendResponse(slideId, alunoMapCoords);
+  // Desabilitar cliques no mapa sem destruí-lo
+  if(alunoMap){
+    alunoMap.off('click');
+    alunoMap.dragging.disable();
+    alunoMap.scrollWheelZoom.disable();
+  }
+  // Mostrar confirmação SEM substituir o mapa
+  const confirmBtn = document.querySelector('.submit-btn');
+  if(confirmBtn){
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = '✓ Localização confirmada!';
+    confirmBtn.style.background = 'var(--teal,#0d9488)';
+  }
+  const confirmMsg = document.getElementById('map-confirm-msg');
+  if(confirmMsg){
+    confirmMsg.textContent = '✓ Localização enviada com sucesso!';
+    confirmMsg.style.display = '';
+  }
+}
+
+
+
+// ─── LOCALSTORAGE: SALVAR E CARREGAR RESULTADOS ──────────────────────────────
+const LS_KEY = 'biblioPoll_ecologia_profbio_2026_results';
+
+function saveResultsLocal(){
+  if(!roomCode) return;
+  // Snapshot das respostas atuais no Firebase → localStorage
+  db.ref('rooms/' + roomCode + '/responses').once('value', snap => {
+    const data = snap.val() || {};
+    const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    saved[roomCode] = {
+      ts: new Date().toISOString(),
+      slides: SLIDES.map(s => s.title),
+      responses: data
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(saved));
+    alert('✅ Resultados salvos localmente! ' + Object.keys(data).length + ' slide(s) com respostas.');
+  });
+}
+
+function exportResultsJSON(){
+  if(!roomCode){ alert('Abra uma sala primeiro.'); return; }
+  db.ref('rooms/' + roomCode + '/responses').once('value', snap => {
+    const data = snap.val() || {};
+    const output = {
+      sala: roomCode,
+      exportado_em: new Date().toLocaleString('pt-BR'),
+      slides: SLIDES.map((s,i) => ({
+        numero: i+1,
+        tipo: s.type,
+        pergunta: s.title,
+        respostas: Object.values(data[s.id] || {}).map(e => ({nome: e.name, resposta: e.value}))
+      }))
+    };
+    const blob = new Blob([JSON.stringify(output, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'biblioPoll_sala_' + roomCode + '_' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+}
+
+function exportResultsCSV(){
+  if(!roomCode){ alert('Abra uma sala primeiro.'); return; }
+  db.ref('rooms/' + roomCode + '/responses').once('value', snap => {
+    const data = snap.val() || {};
+    let csv = 'Slide,Pergunta,Nome,Resposta\n';
+    SLIDES.forEach((s,i) => {
+      const resps = Object.values(data[s.id] || {});
+      if(!resps.length){
+        csv += (i+1) + ',"' + s.title.replace(/"/g,'""') + '","—","—"\n';
+      } else {
+        resps.forEach(e => {
+          const val = Array.isArray(e.value) ? e.value.join(' > ') : String(e.value || '');
+          csv += (i+1) + ',"' + s.title.replace(/"/g,'""') + '","' + (e.name||'').replace(/"/g,'""') + '","' + val.replace(/"/g,'""') + '"\n';
+        });
+      }
+    });
+    const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'biblioPoll_sala_' + roomCode + '_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  });
+}
+
+function viewSavedResults(){
+  const saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+  const keys = Object.keys(saved);
+  if(!keys.length){ alert('Nenhum resultado salvo localmente.'); return; }
+  const list = keys.map(k => k + ' — ' + saved[k].ts + ' (' + Object.keys(saved[k].responses||{}).length + ' slides)').join('\n');
+  alert('Resultados salvos:\n\n' + list);
+}
+
+// ─── URL PARAMS (QR code leva direto ao aluno) ───────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('room')){
+    const code = params.get('room').toUpperCase();
+    goAluno();
+    document.getElementById('room-code-input').value = code;
+  } else if(params.get('prof') === '1') {
+    goProf();
+  }
+});
+</script>
+</body>
+</html>
