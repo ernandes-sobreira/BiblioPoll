@@ -866,12 +866,23 @@ function joinRoom(){
       SLIDES.map((_,i) => '<div class="sp-dot"></div>').join('');
   });
 
-  // Escutar slide atual
-  db.ref('rooms/' + roomCode + '/currentSlide').on('value', snap => {
+  // Escutar slide atual somente depois de carregar o roteiro da sala.
+  // Evita que alguém que entre no meio da aula veja um slide desatualizado.
+  const startListeningSlide = () => db.ref('rooms/' + roomCode + '/currentSlide').on('value', snap => {
     const idx = snap.val();
     if(idx === null || idx === undefined) return;
-    showAlunoSlide(idx);
+    if(SLIDES[idx]) showAlunoSlide(idx);
   });
+  db.ref('rooms/ECO6/slidesConfig').once('value').then(snap => {
+    const saved = snap.val();
+    if(saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if(Array.isArray(parsed) && parsed.length) SLIDES = parsed;
+      } catch(e) {}
+    }
+    startListeningSlide();
+  }).catch(startListeningSlide);
 
   // Escutar atualizações de slides durante a sessão
   db.ref('rooms/' + roomCode + '/slidesMeta').on('value', snap => {
