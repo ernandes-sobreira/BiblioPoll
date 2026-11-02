@@ -1,0 +1,241 @@
+<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f6f9f5"><meta name="description" content="Laboratório interativo Brasil Vivo: Elton, lebre-lince, capivara-onça e ecossistemas brasileiros. PROFBIO UFMT."><title>Brasil Vivo · Laboratório de Ecologia · UFMT</title><style>body{margin:0;background:#f8faf7;color:#234a40;font-family:Inter,system-ui,Arial,sans-serif}header.global{max-width:1200px;margin:0 auto;padding:16px 18px 12px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}header.global strong{font-size:14px;letter-spacing:.08em;color:#18664f}header.global a{color:#286b58;text-decoration:none;font-size:12px;border:1px solid #d6e5dc;border-radius:10px;padding:9px 12px;background:white}main{padding:15px 18px 35px;max-width:1250px;margin:auto}footer{padding:20px;text-align:center;color:#667e72;font-size:11px}</style><style>/* Brasil Vivo — isolado para evitar interferência no Ecologia Viva existente */
+.br-wrap{--br-ink:#1d4640;--br-soft:#628078;--br-accent:#237d67;--br-border:#dfeae4;--br-surface:#f4f9f5;--br-paper:#fff;color:var(--br-ink);max-width:1200px;margin:0 auto;padding:0 0 48px;font-family:Inter,system-ui,-apple-system,Arial,sans-serif}
+.br-wrap *{box-sizing:border-box}.br-wrap button,.br-wrap input{font:inherit}.br-wrap button{cursor:pointer}.br-wrap a{color:#217e71;word-break:break-word}
+.br-head{display:flex;align-items:center;justify-content:space-between;gap:20px;margin:0 0 25px}.br-overline{text-transform:uppercase;font-size:11px;letter-spacing:.14em;color:#2b806f;font-weight:850}.br-head h1{font-family:Georgia,serif;line-height:1.04;letter-spacing:-.035em;font-size:clamp(2rem,4vw,3.3rem);font-weight:800;margin:10px 0 14px;color:#173d36}.br-head p,.br-section-title p{font-size:1rem;line-height:1.65;color:#58736b;max-width:800px;margin:0}.br-head-tag{display:inline-flex;background:#e8f4ed;border:1px solid #cae3d4;padding:10px 14px;border-radius:100px;color:#286d5e;font-size:12px;font-weight:700;white-space:nowrap}
+.br-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:18px 0 24px}.br-tab{text-align:left;display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:13px 14px;background:white;border:1px solid #d7e5dd;border-radius:16px;color:#355b50;min-height:90px;transition:.16s}.br-tab.active{border:2px solid #288572;background:#e3f3ea}.br-tab strong{font-size:13px;line-height:1.2}.br-tab small{font-size:11px;color:#6b897c}.br-icon{font-size:19px;line-height:1.1}
+.br-section-title{margin:0 0 20px}.br-case-kicker{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#4b887b}.br-section-title h2{font-family:Georgia,serif;font-size:clamp(1.55rem,3.3vw,2.6rem);letter-spacing:-.02em;margin:8px 0 11px;color:#183c37;line-height:1.14}
+.br-panel{background:white;border:1px solid #dfebe4;padding:23px 24px;border-radius:21px;min-width:0;box-shadow:0 8px 22px #2853420a}.br-panel h3{font-family:Georgia,serif;font-size:24px;letter-spacing:-.02em;margin:0 0 10px;color:#23483d}.br-panel p{color:#536d65;line-height:1.6;margin:5px 0 14px}.br-panel h3+p{margin-top:7px}.br-panel .br-small{font-size:12px;color:#6e867c}.br-flex{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}.br-flex h3{margin:0 0 13px}.br-badge{border-radius:100px;background:#f8ece4;color:#996b4d;font-size:11px;font-weight:800;padding:6px 12px;white-space:nowrap}.br-badge.br-obs{background:#e5f4e9;color:#327451}.br-history{margin-bottom:18px;border-left:4px solid #3a8e73}.br-history p{font-size:13px}.br-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.35fr);gap:17px;align-items:start}.br-sliders{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:14px}.br-slider{padding:11px 11px 9px;border:1px solid #e5eee8;border-radius:12px;background:#f4f8f5}.br-slider label{font-weight:750;font-size:12px;display:block;line-height:1.3;min-height:41px;color:#2c5a4f}.br-slider label output{display:block;text-align:left;font-size:12px;color:#318471;margin-top:3px;font-weight:800}.br-slider input[type=range]{width:100%;accent-color:#267d69;margin:9px 0 4px}.br-slider details{font-size:11px;color:#637d73}.br-slider summary{cursor:pointer;display:inline-block;border-bottom:1px dotted #8cab9e}.br-slider details p{margin:7px 0 0;line-height:1.5;font-size:11px}.br-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.br-btn{border:1px solid #d1e0d7;background:white;color:#275b51;border-radius:11px;padding:10px 12px;font-weight:750;font-size:12px}.br-btn.primary{background:#207b68;color:white;border-color:#207b68}.br-btn:hover{background:#e8f3eb}.br-btn.primary:hover{background:#145d4e}
+.br-canvas{width:100%;overflow:visible}.br-svg{width:100%;height:auto;display:block}.br-legend{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0 3px}.br-legend span{display:inline-flex;align-items:center;font-size:11px;color:#4e6d63;gap:6px}.br-legend i{width:11px;height:11px;border-radius:100%}.br-chart-unit,.br-legend-note{font-size:11px!important;color:#627a71!important;margin:6px 0 11px!important}.br-legend-note{padding-top:8px}.br-metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}.br-metrics div{background:#eff7f0;padding:12px 11px;border-radius:12px;min-width:0}.br-metrics strong{display:block;font-size:22px;line-height:1.15}.br-metrics small{display:block;font-size:10px;line-height:1.4;color:#608076;margin-top:6px}.br-explanation{border-left:3px solid #e0b07a;padding:9px 12px;background:#fff8ef;color:#855f47;font-size:12px;line-height:1.5;margin-top:13px;border-radius:8px}.br-step-label{display:block;font-size:11px;font-weight:750;color:#39675a;margin-top:15px}.br-result input[type=range]{width:100%;accent-color:#207b68;margin:7px 0 2px}.br-panels{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:17px}.br-insight{border-top:4px solid #cb9765}.br-insight>p{font-size:15px;color:#284f43;font-weight:650}.br-sub{border-top:1px solid #e3eee6;margin-top:12px;padding-top:12px;font-size:12px}.br-sub strong{color:#2c6d5e}.br-sub p{font-size:12px;margin-top:6px}.br-source{display:inline-block;font-size:12px;font-weight:700;margin:6px 0}.br-bottom{font-size:12px;color:#71867a;padding:12px 4px;line-height:1.65}.br-bottom p{margin:10px 0}.br-timeline-tip{font-size:11px;color:#638377}.br-quiz{background:#f4faf7;border-radius:14px;padding:14px}
+@media(max-width:900px){.br-head-tag{display:none}.br-layout{grid-template-columns:1fr}.br-tabs{grid-template-columns:repeat(4,minmax(0,1fr))}.br-panels{grid-template-columns:1fr}.br-head h1{font-size:clamp(1.7rem,6vw,2.6rem)}}
+@media(max-width:550px){.br-tabs{grid-template-columns:repeat(2,minmax(0,1fr))}.br-tab{min-height:76px;padding:10px}.br-panel{padding:15px;border-radius:15px}.br-head{margin-top:8px}.br-head h1{font-size:2rem}.br-section-title h2{font-size:1.6rem}.br-sliders{grid-template-columns:1fr}.br-slider label{min-height:0}.br-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.br-btn{flex:1;white-space:normal;font-size:11px}.br-overline{font-size:10px}.br-tabs{gap:7px}}
+
+.br-compare{margin-top:17px}.br-comparison-table{display:grid;grid-template-columns:1fr 1.25fr 1.25fr;border:1px solid #dde8e1;border-radius:10px;overflow:hidden;font-size:11px}.br-comparison-table>div{border-bottom:1px solid #e8efea;border-right:1px solid #e8efea;padding:10px;line-height:1.45}.br-cmp-head{background:#eaf5ef;font-weight:850;color:#275d51}.br-equation{padding:11px 12px;border:1px solid #e2ede4;border-radius:11px;margin-top:13px;background:#f7faf6}.br-equation summary{cursor:pointer;color:#306b59;font-weight:800;font-size:12px}.br-equation p{font-size:12px;margin:9px 0 0}.br-comparison-table div:nth-child(3n){border-right:0}@media(max-width:550px){.br-comparison-table{font-size:10px;grid-template-columns:1fr 1.15fr 1.15fr}.br-comparison-table>div{padding:7px 6px}}
+
+.br-compare{margin-top:17px}.br-comparison-table{display:grid;grid-template-columns:1fr 1.25fr 1.25fr;border:1px solid #dde8e1;border-radius:10px;overflow:hidden;font-size:11px}.br-comparison-table>div{border-bottom:1px solid #e8efea;border-right:1px solid #e8efea;padding:10px;line-height:1.45}.br-cmp-head{background:#eaf5ef;font-weight:850;color:#275d51}.br-equation{padding:11px 12px;border:1px solid #e2ede4;border-radius:11px;margin-top:13px;background:#f7faf6}.br-equation summary{cursor:pointer;color:#306b59;font-weight:800;font-size:12px}.br-equation p{font-size:12px;margin:9px 0 0}.br-comparison-table div:nth-child(3n){border-right:0}@media(max-width:550px){.br-comparison-table{font-size:10px;grid-template-columns:1fr 1.15fr 1.15fr}.br-comparison-table>div{padding:7px 6px}}
+</style></head><body><header class="global"><strong>🌿 ECOLOGIA VIVA · BRASIL VIVO</strong><a href="https://ernandes-sobreira.github.io/BiblioPoll/profbio-ecologia-2026.html?room=ECO6">📊 BiblioPoll ECO6</a></header><main id="brasil-lab-root"></main><footer>Simulações didáticas, não previsões; dados históricos identificados. PROFBIO · UFMT · 2026</footer><script>/* ECOLOGIA VIVA — BRASIL VIVO · módulo científico autocontido.
+ * Três categorias distintas: dado histórico (peles), simulações hipotéticas e recomendações de medição.
+ * Sem dependências de bibliotecas externas. Nunca tratar curvas geradas como observações brasileiras.
+ */
+(function(){
+'use strict';
+const rootGlobal=window;
+const HIST={
+ year:Array.from({length:21},(_,i)=>1900+i),
+ hare:[30,47.2,70.2,77.4,36.3,20.6,18.1,21.4,22,25.4,27.1,40.3,57,76.6,52.3,19.5,11.2,7.6,14.6,16.2,24.7],
+ lynx:[4,6.1,9.8,35.2,59.4,41.7,19,13,8.3,9.1,7.4,8,12.3,19.5,45.7,51.1,29.7,15.8,9.7,10.1,8.6]
+};
+const SOURCES={
+ elton:'https://academic.oup.com/mspecies/article/51/985/136/5669851',
+ historical:'https://github.com/rmcelreath/rethinking/blob/master/data/Lynx_Hare.csv',
+ jaguar:'https://pmc.ncbi.nlm.nih.gov/articles/PMC4803351/',
+ cerrado:'https://agupubs.onlinelibrary.wiley.com/doi/full/10.1029/2022JG007046',
+ caatinga:'https://www.mdpi.com/1999-4907/15/7/1108',
+ amazonia:'https://umesc.usgs.gov/data_library/fisheries/fish_passage/junk2.html',
+ mata:'https://pubmed.ncbi.nlm.nih.gov/31897723/',
+ mangue:'https://www.frontiersin.org/journals/plant-science/articles/10.3389/fpls.2026.1986366/full',
+ urbana:'https://plataforma.mapbiomas.org/'
+};
+const CASES=[
+{id:'elton',label:'Lebres × linces',tag:'Canadá · caso clássico',icon:'🐇',color:'#2d796c',title:'Charles Elton: as oscilações de lebres e linces',subtitle:'Veja registros históricos de peles (1900–1920) e, separadamente, experimente um modelo predador–presa.',question:'O pico das lebres tende a ocorrer antes do pico dos linces? Os registros permitem afirmar que há causalidade?',process:'Crescimento logístico da presa + consumo saturante (resposta funcional tipo II) + resposta demográfica do predador.',limitation:'Os valores históricos são peles comercializadas, não contagem de indivíduos. O modelo não foi ajustado aos dados e não é uma reconstrução da série. Charles Elton estudou as oscilações; as equações predador–presa foram desenvolvidas por Lotka e Volterra.',field:'Séries de abundância/ocupação padronizadas, esforço de amostragem, recursos vegetais, proporção de presas na dieta e clima.',source:SOURCES.elton,sourceData:SOURCES.historical,kind:'pred',values:{prey:72,pred:12,r:.95,k:160,attack:1.9,half:32,eff:50,mort:.60,alt:0,clima:0,refuge:10},params:[
+ ['prey','Lebres iniciais','índice',20,140,5,'Abundância inicial relativa das lebres no modelo hipotético.'],
+ ['pred','Linces iniciais','índice',1,65,1,'Abundância relativa inicial dos linces; não corresponde a indivíduos observados.'],
+ ['r','Crescimento da presa','ano⁻¹',.2,1.8,.05,'Crescimento potencial anual das lebres antes da limitação de recursos e predação.'],
+ ['k','Capacidade de suporte','índice',80,250,10,'Teto de abundância relativa da presa imposto por recursos e habitat.'],
+ ['attack','Consumo máximo por predador','índice/ano',.5,4,.1,'Intensidade máxima abstrata de consumo, com saturação ao aumentar a presa.'],
+ ['half','Meia saturação','índice de presa',10,90,5,'Abundância relativa de presas para atingir metade do consumo máximo.'],
+ ['eff','Conversão demográfica','índice %',10,90,5,'Proporção abstrata da alimentação que contribui ao crescimento do predador.'],
+ ['mort','Mortalidade de predadores','ano⁻¹',.1,1.4,.05,'Perda anual relativa de predadores, antes de ganhos por alimentação.'],
+ ['refuge','Refúgio de presas','índice %',0,80,5,'Reduz a exposição hipotética das lebres à predação.']
+ ]},
+{id:'pantanal',label:'Capivaras × onças',tag:'Pantanal · hipotético',icon:'🐆',color:'#be8655',title:'Pantanal: capivaras, onças e presas alternativas',subtitle:'Compare o caso de Elton a uma relação menos exclusiva, em que a onça também pode predar jacarés, queixadas e outras espécies.',question:'Se a população de capivaras cair, a população de onças necessariamente vai cair na mesma proporção?',process:'Presa com dependência da densidade, predação saturante, abrigo/refúgio e contribuição de fontes alternativas de alimento ao predador.',limitation:'Modelo conceitual, sem taxa de ataque, conversão ou mortalidade estimadas para o Pantanal. A onça é generalista: a disponibilidade de outras presas importa; capivara não representa sua dieta inteira. Não prevê números de animais.',field:'Armadilhas fotográficas, marcação ou transectos para capivaras, dietas por fezes/carcasas, nível da água, disponibilidade de habitat, esforço amostral.',source:SOURCES.jaguar,kind:'pred',values:{prey:80,pred:14,r:.65,k:150,attack:1.6,half:38,eff:33,mort:.43,alt:55,clima:30,refuge:20},params:[
+ ['prey','Capivaras iniciais','índice',20,140,5,'Abundância relativa hipotética; não equivale a animais contados.'],
+ ['pred','Onças iniciais','índice',1,45,1,'Abundância relativa do predador no cenário; não é densidade real.'],
+ ['r','Crescimento potencial da presa','ano⁻¹',.2,1.4,.05,'Taxa anual potencial de crescimento da presa antes de competição e predação.'],
+ ['k','Suporte do habitat','índice',60,230,10,'Recurso/habitat disponível para capivaras em unidades abstratas.'],
+ ['attack','Intensidade da predação','índice/ano',.4,3,.1,'Consumo máximo abstrato por predador, no cenário simplificado.'],
+ ['half','Meia saturação','índice de presa',10,90,5,'Abundância relativa que leva o termo de consumo a metade do máximo.'],
+ ['eff','Conversão demográfica','índice %',5,70,5,'Eficiência abstrata da predação na resposta populacional das onças.'],
+ ['mort','Perdas de onças','ano⁻¹',.1,1.2,.05,'Mortalidade ou saídas relativas do predador; não representa taxa de campo.'],
+ ['alt','Presas alternativas','índice %',0,100,5,'Representa recursos alimentares não incluídos explicitamente, como jacarés ou queixadas; não altera diretamente a mortalidade das capivaras.'],
+ ['clima','Forçante sazonal','índice %',0,70,5,'Modulação ilustrativa da disponibilidade de recursos; não é altura da água em centímetros.'],
+ ['refuge','Refúgio de capivaras','índice %',0,80,5,'Reduz exposição à predação sem representar um valor empírico.']
+ ]},
+{id:'cerrado',label:'Fogo e vegetação',tag:'Cerrado',icon:'🔥',color:'#b4784a',title:'Cerrado: fogo, rebrota e estrutura da vegetação',subtitle:'Experimente como frequência de fogo e capacidade de rebrota podem alterar grupos herbáceos e lenhosos.',question:'Fogo frequente favorece sempre as mesmas plantas? A resposta depende da forma de vida?',process:'Crescimento relativo de herbáceas e lenhosas com taxas distintas de rebrota e perdas episódicas por fogo.',limitation:'Os índices não predizem biomassa real nem a resposta de cada fitofisionomia. Regime, severidade e história do fogo podem beneficiar ou prejudicar organismos diferentes.',field:'Cobertura e biomassa por forma de vida, intervalo desde o fogo, severidade, chuva, composição florística, brotação e solos.',source:SOURCES.cerrado,kind:'cerrado',values:{fogo:4,sever:42,rebrote:75,chuva:75,lenhosas:55},params:[
+ ['fogo','Intervalo entre incêndios','anos',1,20,1,'Número hipotético de anos entre eventos de fogo.'],
+ ['sever','Severidade do fogo','índice %',0,100,5,'Intensidade do efeito sobre tecido e cobertura; não representa temperatura da chama.'],
+ ['rebrote','Capacidade de rebrota','índice %',10,100,5,'Capacidade funcional de recuperação após fogo, variável entre grupos.'],
+ ['chuva','Disponibilidade hídrica','índice %',10,100,5,'Disponibilidade relativa de água que limita o crescimento pós-distúrbio.'],
+ ['lenhosas','Cobertura lenhosa inicial','índice %',10,85,5,'Cobertura relativa inicial de arbustos/árvores.']
+ ]},
+{id:'caatinga',label:'Chuva e sementes',tag:'Caatinga',icon:'🌵',color:'#af8a57',title:'Caatinga: chuva, banco de sementes e recrutamento',subtitle:'Distribua chuva em pulsos: a mesma chuva anual pode gerar respostas diferentes no estabelecimento de plântulas.',question:'Importa mais o total anual de chuva ou a sequência de eventos e sua retenção no solo?',process:'Balanço mensal simplificado do solo, janelas de germinação e perda de plântulas sob déficit hídrico.',limitation:'O limiar de germinação é uma escolha didática; varia com espécie, dormência, temperatura, microsítio e profundidade. Não são observações climáticas nem respostas calibradas.',field:'Pluviometria por evento, umidade do solo, germinação em parcelas, profundidade/viabilidade do banco de sementes e sobrevivência após chuva.',source:SOURCES.caatinga,kind:'caatinga',values:{chuva:560,concen:65,retencao:65,semente:75,et:24},params:[
+ ['chuva','Chuva anual hipotética','mm/ano',200,1100,20,'Volume anual total distribuído artificialmente entre os meses.'],
+ ['concen','Concentração em pulsos','índice %',0,100,5,'Maior valor concentra a chuva em poucos eventos; não muda a soma anual.'],
+ ['retencao','Retenção de água no solo','índice %',10,100,5,'Fração simplificada de chuva armazenada em vez de escoar/percolar.'],
+ ['semente','Banco viável de sementes','índice %',10,100,5,'Quantidade relativa de propágulos capazes de germinar.'],
+ ['et','Perda mensal potencial de água','mm/mês',5,65,5,'Perda simplificada por evaporação e uso por plantas.']
+ ]},
+{id:'amazonia',label:'Cheia e peixes',tag:'Amazônia',icon:'🐟',color:'#398b84',title:'Amazônia: pulso de inundação e recrutamento de peixes',subtitle:'Explore como duração da cheia e conexão com a várzea criam oportunidades de acesso a habitats e recursos.',question:'Uma cheia maior sempre aumenta o sucesso de recrutamento? O que muda quando a conectividade cai?',process:'Pulso anual de habitat inundado com resposta de recrutamento defasada e dependente de conectividade.',limitation:'Modelo esquemático, sem espécie ou bacia definida. Recrutamento depende também de pesca, oxigênio, temperatura, reprodução, velocidade da água e mortalidade.',field:'Hidrograma, área inundada, conectividade, ovos/larvas/juvenis, pesca, oxigênio dissolvido, temperatura e esforço amostral.',source:SOURCES.amazonia,kind:'amazonia',values:{cheia:4,dur:5,con:78,pesca:22,ox:80},params:[
+ ['cheia','Amplitude do pulso','m (ilustrativos)',1,8,.5,'Variação de nível da água durante cheia; conversão em habitat é hipotética.'],
+ ['dur','Duração da cheia','meses',2,9,1,'Quantidade de meses com acesso sazonal à várzea.'],
+ ['con','Conectividade com a planície','índice %',0,100,5,'Possibilidade relativa de peixes acessar habitats temporariamente alagados.'],
+ ['pesca','Pressão de captura','índice %',0,80,5,'Perda relativa hipotética de indivíduos no recrutamento.'],
+ ['ox','Qualidade do oxigênio','índice %',10,100,5,'Disponibilidade relativa de condições adequadas de oxigênio para juvenis.']
+ ]},
+{id:'mata',label:'Plantas e polinizadores',tag:'Mata Atlântica',icon:'🦋',color:'#608d54',title:'Mata Atlântica: fragmentação e rede de polinização',subtitle:'Aumente conectividade, vegetação e pressão de agrotóxicos para explorar consequências sobre interações.',question:'Riqueza de plantas sozinha garante uma rede robusta de polinizadores?',process:'Interação hipotética entre cobertura de habitat, conectividade, pressão química e disponibilidade de flores.',limitation:'Não é índice validado de polinização. Nem todas as plantas dependem de polinização animal; efeitos da fragmentação são específicos do sistema.',field:'Rede planta-visitante, frequência de visitas, frutificação, cobertura do entorno, distância entre fragmentos, pesticidas e fenologia.',source:SOURCES.mata,kind:'mata',values:{cob:55,con:40,agro:25,flor:70,div:75},params:[
+ ['cob','Cobertura de habitat','índice %',5,100,5,'Cobertura relativa de vegetação útil a organismos focais.'],
+ ['con','Conectividade','índice %',0,100,5,'Possibilidade de movimento entre fragmentos, não apenas distância linear.'],
+ ['agro','Pressão de agrotóxicos','índice %',0,100,5,'Exposição hipotética, sem equivalência a dosagem real.'],
+ ['flor','Recursos florais','índice %',0,100,5,'Disponibilidade relativa de flores, néctar e pólen para visitantes.'],
+ ['div','Diversidade funcional','índice %',5,100,5,'Complementaridade funcional ilustrativa dos polinizadores.']
+ ]},
+{id:'mangue',label:'Sal e plântulas',tag:'Manguezais',icon:'🌱',color:'#45958d',title:'Manguezais: salinidade e estabelecimento',subtitle:'Investigue salinidade, inundação e chegada de propágulos, lembrando que respostas dependem da espécie.',question:'Uma salinidade intermediária pode facilitar algumas espécies e restringir outras?',process:'Resposta de estabelecimento a um ótimo abstrato de salinidade, modulada por hidroperíodo e suprimento de propágulos.',limitation:'A curva em forma de sino NÃO é uma lei geral de manguezais. Ótimo/tolerância variam entre espécies, fase de vida, tipo de solo e hidrogeomorfologia.',field:'Salinidade da água intersticial, oxigênio e sulfetos, hidroperíodo, densidade de propágulos, recrutamento e sobrevivência por espécie.',source:SOURCES.mangue,kind:'mangue',values:{sal:24,otimo:22,tol:17,mare:60,prop:80},params:[
+ ['sal','Salinidade intersticial','psu (aprox.)',0,60,2,'Conteúdo de sais na água dos poros, aproximadamente em unidades práticas de salinidade.'],
+ ['otimo','Ótimo hipotético','psu (aprox.)',5,45,2,'Salinidade que maximiza desempenho nesta espécie imaginária, não ótima para todas.'],
+ ['tol','Amplitude de tolerância','índice',5,30,1,'Largura da resposta à salinidade em uma função didática.'],
+ ['mare','Hidroperíodo adequado','índice %',0,100,5,'Adequação da inundação e drenagem locais, não apenas nível da maré.'],
+ ['prop','Suprimento de propágulos','índice %',0,100,5,'Disponibilidade relativa de propágulos chegando e ficando no local.']
+ ]},
+{id:'cidade',label:'Chuva na cidade',tag:'Cidades brasileiras',icon:'🏙️',color:'#557d9c',title:'Ecologia urbana: chuva, impermeabilização e verde',subtitle:'Compare como a chuva se transforma em escoamento rápido ou em infiltração/retenção, conforme a paisagem.',question:'Dois bairros com a mesma chuva geram a mesma resposta hídrica?',process:'Partição simplificada da chuva entre escoamento, infiltração/retenção e perda/interceptação (em mm por evento).',limitation:'É balanço por evento, não modelo hidrológico calibrado. Não estima vazão de pico, enchente nem temperatura real; a eficiência da infraestrutura verde varia.',field:'Chuvas por pluviômetro, área impermeável, declividade, solo, cobertura arbórea, capacidade de drenagem, infiltração e vazão.',source:SOURCES.urbana,kind:'cidade',values:{chuva:60,imper:60,verde:25,inf:55},params:[
+ ['chuva','Chuva em um evento','mm',10,150,5,'Lâmina precipitada em um evento, sem fixar duração nem intensidade.'],
+ ['imper','Área impermeável','%',0,100,5,'Proporção de superfícies com pouca infiltração, como asfalto e concreto.'],
+ ['verde','Infraestrutura verde','índice %',0,100,5,'Intensidade relativa de soluções vegetadas capazes de reter parte da chuva.'],
+ ['inf','Capacidade de infiltração','índice %',0,100,5,'Aptidão relativa de solos permeáveis para absorver água da chuva.']
+ ]}
+];
+const BR={id:'elton',historical:true,params:Object.fromEntries(CASES.map(x=>[x.id,{...x.values}])),base:{},step:null,run:false,timer:null};
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const f=(v,d=1)=>Number(v).toLocaleString('pt-BR',{maximumFractionDigits:d,minimumFractionDigits:0});
+const e=s=>String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const styles={prey:'#318877',pred:'#b67a43',a:'#318877',b:'#b67a43',ref:'#9095a8'};
+function caseById(id){return CASES.find(x=>x.id===id)||CASES[0]}
+function simPred(p,id){let prey=p.prey,pred=p.pred,preys=[prey],preds=[pred];
+ const years=30,steps=12*years;
+ for(let j=1;j<=steps;j++){
+  const dt=1/12,t=j*dt,season=id==='pantanal'?1+p.clima/100*.25*Math.sin(t*2*Math.PI):1;
+  const food=p.attack*(1-p.refuge/100)*prey/(p.half+prey),k=p.k*(id==='pantanal'?1+.10*(p.clima/100)*Math.sin(2*Math.PI*t):1);
+  const dPrey=p.r*season*prey*(1-prey/k)-food*pred;
+  const alt=id==='pantanal'? .34*p.alt/100:0;
+  const dPred=pred*(p.eff/100*food +alt-p.mort);
+  prey=clamp(prey+dt*dPrey,0,2.5*p.k);pred=clamp(pred+dt*dPred,0,160);
+  if(prey<.00001)prey=0;if(pred<.00001)pred=0;
+  if(j%12===0){preys.push(prey);preds.push(pred)}
+ }
+ return {x:Array.from({length:years+1},(_,i)=>i),series:[{name:id==='elton'?'Lebres':'Capivaras',color:styles.prey,y:preys},{name:id==='elton'?'Linces':'Onças',color:styles.pred,y:preds}],unit:'Índices de abundância hipotéticos',xLabel:'Anos simulados',conclusion:preys.at(-1)===0?'Presa desapareceu no cenário: teste condições de menor pressão.':'Oscilação, estabilidade e redução dependem conjuntamente das taxas e dos recursos.',metrics:[['Presa no fim',preys.at(-1),'índice'],['Predador no fim',preds.at(-1),'índice'],['Predador máximo',Math.max(...preds),'índice']]};
+}
+function simCerrado(p){let g=45,w=p.lenhosas,A=[],B=[];for(let t=0;t<=40;t++){
+ A.push(g);B.push(w);g+=.28*(p.chuva/100)*(100-g)*g/100;w+=.12*(p.chuva/100)*(100-w)*w/100;
+ if(p.fogo&&t>0&&(t+1)%p.fogo===0){g*=1-.44*p.sever/100*(1-p.rebrote/100*.55);w*=1-.76*p.sever/100*(1-p.rebrote/100*.28)}
+ g=clamp(g,0,100);w=clamp(w,0,100)}return multi('Anos','Índice relativo de cobertura (%)',A,B,'Herbáceas','Lenhosas','A frequência e a intensidade do fogo modificam grupos com resistência e recuperação distintas.');}
+function simCaatinga(p){let soil=25,seed=p.semente,water=[],recr=[],total=0;for(let m=0;m<36;m++){
+  const month=m%12,wet=[11,0,1,2,3].includes(month);
+  const season= p.chuva * (wet? (1.0+p.concen/100*1.5):(.35 + (1-p.concen/100)*.65)) / (5*(1+p.concen/100*1.5)+7*(.35+(1-p.concen/100)*.65));
+  soil=clamp(soil+season*p.retencao/100-p.et,0,120);
+  const germ=clamp((soil-15)/55,0,1)*seed*.45;
+  seed=clamp(seed+8-germ*.27,0,100);
+  water.push(soil/1.2);recr.push(germ);
+ }
+ return {x:Array.from({length:36},(_,i)=>i+1),series:[{name:'Água no solo',color:styles.prey,y:water},{name:'Emergência potencial',color:styles.pred,y:recr}],unit:'Índices 0–100 (%)',xLabel:'Mês simulado',conclusion:'O modelo preserva o total anual hipotético de chuva; sua distribuição entre meses altera janelas de água disponível.',metrics:[['Água média',avg(water),'índice %'],['Emergência média',avg(recr),'índice %']]};
+}
+function simAmazonia(p){let h=[],r=[];for(let m=0;m<48;m++){
+  const phase=m%12,months=clamp(p.dur,1,11),isWet=phase<months;
+  const habitat=isWet ? p.con/100*clamp(p.cheia/6,0,1)*Math.sin(Math.PI*(phase+.6)/months):0;
+  h.push(100*habitat);
+  let fish=100*habitat*(1-p.pesca/100)*p.ox/100;
+  r.push(clamp(fish,0,100));
+ }
+ const lagged=r.map((_,i)=>i===0?0:.65*r[i-1]+.35*r[Math.max(0,i-2)]);
+ return {x:Array.from({length:48},(_,i)=>i+1),series:[{name:'Habitat acessível',color:styles.prey,y:h},{name:'Recrutamento posterior',color:styles.pred,y:lagged}],unit:'Índices 0–100 (%)',xLabel:'Mês simulado',conclusion:'Há uma defasagem ilustrativa entre a cheia e o recrutamento de juvenis. Não é previsão de um estoque pesqueiro.',metrics:[['Acesso máximo',Math.max(...h),'índice %'],['Recrutamento médio',avg(lagged),'índice %']]};
+}
+function simMata(p){const base=100*Math.sqrt(p.cob/100)*Math.sqrt(p.con/100)*(1-p.agro/100)*(.25+.75*p.flor/100)*(.35+.65*p.div/100);let x=30,y=15;let a=[x],b=[y];for(let t=1;t<=48;t++){x=clamp(x+.12*(base-x),0,100);y=clamp(y+.09*(.83*x-y),0,100);a.push(x);b.push(y)}return multi('Meses','Índices funcionais 0–100 (%)',a,b,'Interação planta–polinizador','Frutificação hipotética','O índice combina paisagem e recursos: não mede fecundação de uma espécie real.');}
+function simMangue(p){const fitness=Math.exp(-.5*Math.pow((p.sal-p.otimo)/p.tol,2))*(.30+.70*p.mare/100)*p.prop/100;let x=10,a=[x],b=[100*fitness];for(let t=1;t<=36;t++){x=clamp(x+.10*(100*fitness-x),0,100);a.push(x);b.push(100*fitness)}return multi('Meses','Índice funcional 0–100 (%)',a,b,'Estabelecimento acumulado','Adequação ambiental','O ótimo de salinidade é uma hipótese específica deste organismo fictício; outras espécies apresentam respostas diferentes.');}
+function simCidade(p){const ip=p.imper/100,veg=p.verde/100,inf=p.inf/100;
+ const imperRun=p.chuva*ip*.91;
+ const permeavel=p.chuva*(1-ip),greenCatch=permeavel*(veg*.28),soilInf=(permeavel-greenCatch)*inf*.76;
+ const runoff=imperRun+(permeavel-greenCatch-soilInf)*.58;
+ const retained=p.chuva-runoff;
+ const series=[{name:'Escoamento rápido',color:styles.pred,y:[runoff]},{name:'Infiltração + retenção + outras perdas',color:styles.prey,y:[retained]}];
+ return {x:[0],series,unit:'mm por evento',xLabel:'Evento hipotético',kind:'bars',conclusion:'Fechamento ilustrativo: chuva = escoamento rápido + infiltração/retenção e outras perdas. Não representa pico de vazão nem risco de enchente.',metrics:[['Escoamento',runoff,'mm'],['Retenção e demais perdas',retained,'mm'],['Fração escoada',100*runoff/p.chuva,'%']],residual:Math.abs(p.chuva-runoff-retained)};}
+function multi(xLabel,unit,a,b,n1,n2,conclusion){return {x:Array.from({length:a.length},(_,i)=>i),series:[{name:n1,color:styles.prey,y:a},{name:n2,color:styles.pred,y:b}],xLabel,unit,conclusion,metrics:[[n1+' no fim',a.at(-1),'índice'],[n2+' no fim',b.at(-1),'índice']]};}
+function avg(a){return a.reduce((s,x)=>s+x,0)/a.length}
+function compute(id,p){switch(id){case'elton':case'pantanal':return simPred(p,id);case'cerrado':return simCerrado(p);case'caatinga':return simCaatinga(p);case'amazonia':return simAmazonia(p);case'mata':return simMata(p);case'mangue':return simMangue(p);case'cidade':return simCidade(p);default:return simPred(p,'elton')}}
+function plot(dat, opts={}){
+ const series=dat.series;if(!series?.length)return '<p>Sem série disponível.</p>';const w=860,h=315,pl=57,pr=19,pt=24,pb=43,W=w-pl-pr,H=h-pt-pb;
+ if(dat.kind==='bars'){
+ const total=series.reduce((s,o)=>s+o.y[0],0)||1;
+ let out=`<svg role="img" aria-label="Partição da chuva em mm" viewBox="0 0 860 200"><rect x="58" y="50" width="744" height="80" rx="16" fill="#edf3ee"/>`;
+ let start=58;for(const line of series){let ww=744*line.y[0]/total;out+=`<rect x="${start}" y="50" width="${ww}" height="80" fill="${line.color}"/><text x="${start+ww/2}" y="92" fill="#fff" font-size="19" font-weight="700" text-anchor="middle">${ww>85?f(line.y[0],1)+' mm':''}</text>`;start+=ww}
+ out+=`<text x="58" y="172" font-size="14" fill="#6a7b73">Chuva total: ${f(total)} mm · evento ilustrativo</text></svg>`;return out+legend(series)}
+ const all=series.flatMap(z=>z.y.filter(Number.isFinite));const yMax=opts.max||Math.max(10,...all)*1.10;const yMin=0;const xLen=series[0].y.length;
+ const XX=i=>pl+W*(i/Math.max(1,xLen-1)),YY=v=>pt+H*(1-v/yMax);
+ let s=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="Gráfico dinâmico de ${e(dat.unit)}" class="br-svg"><rect width="${w}" height="${h}" rx="14" fill="#fff"/>`;
+ for(let k=0;k<=4;k++){const v=yMax*k/4,Y=YY(v);s+=`<line x1="${pl}" x2="${w-pr}" y1="${Y}" y2="${Y}" stroke="#e8efea"/><text x="${pl-9}" y="${Y+4}" text-anchor="end" fill="#71837c" font-size="12">${f(v,v<20?1:0)}</text>`}
+ for(let k=0;k<=5;k++){let i=Math.round((xLen-1)*k/5),x=XX(i),label=dat.x?dat.x[i]:i;s+=`<text x="${x}" y="${h-15}" text-anchor="middle" fill="#71837c" font-size="12">${f(label,0)}</text>`}
+ for(const line of series){const path=line.y.map((v,i)=>(i?'L':'M')+XX(i).toFixed(2)+' '+YY(clamp(v,0,yMax)).toFixed(2)).join(' ');
+ s+=`<path d="${path}" stroke="${line.color}" stroke-width="${line.dash?'2':'3.5'}" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="${line.dash?'7 6':''}" fill="none"/>`}
+ if(opts.cursor!=null){const i=clamp(opts.cursor,0,xLen-1),x=XX(i);s+=`<line x1="${x}" x2="${x}" y1="${pt}" y2="${h-pb}" stroke="#536a61" stroke-width="1.6" stroke-dasharray="4 5" opacity=".8"/>`}
+ s+=`<text x="${w/2}" y="${h-2}" text-anchor="middle" font-size="11" fill="#61776b">${e(dat.xLabel||'Tempo simulado')}</text></svg>`;
+ return s+legend(series)+`<p class="br-chart-unit">Escala vertical: ${e(dat.unit)}</p>`}
+function legend(arr){return `<div class="br-legend">${arr.map(z=>`<span><i style="background:${z.color}"></i>${e(z.name)}</span>`).join('')}</div>`}
+const btn=(content,attr='')=>`<button type="button" ${attr}>${content}</button>`;
+function toBar(c){return `<div class="br-tabs">${CASES.map(x=>btn(`<span class="br-icon">${x.icon}</span><strong>${e(x.label)}</strong><small>${e(x.tag)}</small>`,`data-br-case="${x.id}" class="br-tab ${x.id===c.id?'active':''}" aria-pressed="${x.id===c.id}"`)).join('')}</div>`}
+function comparisonBlock(){return `<section class="br-panel br-compare"><h3>Comparação: o que pode ser transferido do Canadá para o Brasil?</h3><div class="br-comparison-table"><div class="br-cmp-head">Aspecto</div><div class="br-cmp-head">Lebre × lince · Canadá</div><div class="br-cmp-head">Capivara × onça · Pantanal</div>
+ <div>Tipo de evidência</div><div>Série histórica de peles (1900–1920), não censo.</div><div>Sem série temporal associada nesta aula; simulação hipotética.</div>
+ <div>Relação trófica</div><div>O lince depende fortemente da lebre-americana.</div><div>A onça consome capivara e diversas outras presas.</div>
+ <div>Forçantes ecológicas</div><div>Vegetação, clima, predadores, estresse e captura humana.</div><div>Cheias, habitat, disponibilidade de presas e intervenções humanas.</div>
+ <div>Conclusão testável</div><div>Existe defasagem entre os picos das duas séries?</div><div>Alterar presas alternativas muda a dinâmica prevista de onças?</div></div><p class="br-small">Não suponha que os mesmos ciclos de 9–11 anos ocorram para capivaras e onças. Esta é uma comparação de mecanismos, não uma extrapolação de parâmetros.</p></section>`}
+const RULES={
+ elton:'dP/dt = r·P·(1−P/K) − a·(1−refúgio)·P·J/(h+P); dJ/dt = J·(e·a·(1−refúgio)·P/(h+P) − m).',
+ pantanal:'Mesmo mecanismo predador–presa, com termo adicional Aₐₗₜ representando recursos alternativos do predador e pequena modulação sazonal hipotética.',
+ cerrado:'Cobertura(t+1) = cobertura(t) + crescimento dependente de água − perda episódica no fogo, com fatores próprios para herbáceas e lenhosas.',
+ caatinga:'Água no solo(t+1) = limitar[água(t) + chuva retida(t) − perda potencial(t)]; emergência = f(água disponível, banco de sementes).',
+ amazonia:'Habitat acessível(t) = f(amplitude, duração, conexão); recrutamento(t) = f(habitat acessível nos meses anteriores, captura e oxigênio).',
+ mata:'Índice de interação = cobertura⁰·⁵ × conectividade⁰·⁵ × recursos florais × diversidade funcional × (1−pressão química).',
+ mangue:'Adequação = exp[−0,5·((salinidade−ótimo)/tolerância)²] × hidroperíodo × disponibilidade de propágulos.',
+ cidade:'Chuva por evento = escoamento rápido + infiltração/retenção e outras perdas; proporções variam com impermeabilização e vegetação.'
+};
+function render(){stop();const c=caseById(BR.id),p=BR.params[c.id],target=document.getElementById('brasil-lab-root')||document.getElementById('view');if(!target)return;
+ let markup=`<section class="br-wrap"><header class="br-head"><div><div class="br-overline">Ecologia Viva · Laboratório Brasil Vivo</div><h1>De Elton aos ecossistemas brasileiros.</h1><p>Estude um dado histórico e teste hipóteses dinâmicas para Pantanal, Cerrado, Caatinga, Amazônia, Mata Atlântica, manguezais e cidades.</p></div><span class="br-head-tag">8 experiências · offline para os modelos</span></header>${toBar(c)}
+ <section class="br-section-title"><div class="br-case-kicker">${e(c.tag)} · ${c.id==='elton'?'REGISTROS HISTÓRICOS + SIMULAÇÃO':'CENÁRIO HIPOTÉTICO'}</div><h2>${e(c.title)}</h2><p>${e(c.subtitle)}</p></section>`;
+ if(c.id==='elton')markup+=`<section class="br-panel br-history"><div class="br-flex"><h3>O que os registros mostram?</h3><span class="br-badge br-obs">Dados históricos · 1900–1920</span></div><p>Série de peles comercializadas da lebre-americana (<i>Lepus americanus</i>) e do lince-do-canadá (<i>Lynx canadensis</i>). Eixo vertical em <b>milhares de peles</b>, não número de animais. Elton e Nicholson investigaram ciclos históricos; abaixo há uma simulação separada.</p>${plot({x:HIST.year,unit:'Milhares de peles comercializadas',xLabel:'Ano histórico',series:[{name:'Lebre · peles',color:styles.prey,y:HIST.hare},{name:'Lince · peles',color:styles.pred,y:HIST.lynx}]})}<div class="br-legend-note">Fonte reproduzida: <a target="_blank" rel="noopener noreferrer" href="${SOURCES.historical}">McElreath, Lynx_Hare.csv</a>. Peles ≠ censo populacional; o esforço de captura pode variar.</div></section>`;
+ markup+=`<div class="br-layout"><section class="br-panel"><div class="br-flex"><h3>Controle experimental</h3><span class="br-badge">Hipotético</span></div><p class="br-small">Mude uma variável de cada vez e compare a resposta. Índices não são contagens de fauna brasileira.</p>
+ <div class="br-sliders">${c.params.map(([key,name,unit,min,max,step,def])=>`<div class="br-slider"><label for="br-${c.id}-${key}">${e(name)} <output id="br-val-${key}">${f(p[key],3)} ${e(unit)}</output></label><input id="br-${c.id}-${key}" data-br-param="${key}" type="range" min="${min}" max="${max}" step="${step}" value="${p[key]}"/><details><summary>O que é?</summary><p>${e(def)}</p></details></div>`).join('')}</div>
+ <details class="br-equation"><summary>Como esta simulação calcula?</summary><p>${e(RULES[c.id])}</p></details><div class="br-actions">${btn('↺ Restaurar','data-br-reset="1" class="br-btn"')}${btn('⚡ Aplicar perturbação','data-br-perturb="1" class="br-btn"')}${btn('◌ Fixar referência','data-br-baseline="1" class="br-btn primary"')}</div></section>
+ <section class="br-panel br-result"><div class="br-flex"><h3>Resultado dinâmico</h3><span class="br-badge" id="br-plot-badge">Calculado agora</span></div><div class="br-canvas" id="br-chart"></div><div class="br-metrics" id="br-metrics"></div><div class="br-explanation" id="br-note"></div><label for="br-time" class="br-step-label">Explorar o tempo: <output id="br-step-text">—</output></label><input id="br-time" type="range" min="0" max="30" value="0" step="1" data-br-time="1"/><div class="br-actions">${btn('▶ Reproduzir evolução','data-br-play="1" class="br-btn"')}${btn('⏸ Parar','data-br-pause="1" class="br-btn"')}</div><p class="br-small" id="br-saved">Fixe uma curva de referência e altere uma variável para testar outra hipótese.</p></section></div>
+ <div class="br-panels"><section class="br-panel br-insight"><h3>Hipótese para debate</h3><p>${e(c.question)}</p><div class="br-sub"><strong>Mecanismo representado</strong><p>${e(c.process)}</p></div><div class="br-sub"><strong>Limites e pressupostos</strong><p>${e(c.limitation)}</p></div></section><section class="br-panel"><h3>Do modelo para o campo</h3><p>${e(c.field)}</p><p class="br-small">Trate simulação e observação como evidências diferentes. Para resultados empíricos, defina espécie, unidade amostral, período, replicação e detectabilidade.</p><a class="br-source" href="${e(c.source)}" target="_blank" rel="noopener noreferrer">Conhecer a referência científica ↗</a>${c.sourceData?`<p><a class="br-source" href="${e(c.sourceData)}" target="_blank" rel="noopener noreferrer">Consultar a série histórica ↗</a></p>`:''}</section></div>
+ ${c.id==='elton'||c.id==='pantanal'?comparisonBlock():''}<div class="br-bottom"><p><b>Transparência científica:</b> somente a série lebre–lince acima utiliza dados históricos transcritos. Todos os números, parâmetros, curvas e cenários brasileiros são construções didáticas e não foram ajustados, validados ou projetados para uma localidade.</p></div></section>`;
+ target.innerHTML=markup;refresh()}
+function refresh(){const c=caseById(BR.id),p=BR.params[c.id],dat=compute(c.id,p),ch=document.getElementById('br-chart');if(!ch)return;BR.current=dat;
+ let series=dat.series.slice();const prior=BR.base[c.id];if(prior&&prior.series?.length&&dat.kind!=='bars'){const arr=prior.series[0].y;if(arr.length===dat.series[0].y.length)series.push({name:'Referência · '+prior.series[0].name,y:arr,color:styles.ref,dash:true})}
+ const plotObj={...dat,series};ch.innerHTML=plot(plotObj,{cursor:BR.step});
+ let currentStep=BR.step==null?0:clamp(BR.step,0,dat.x.length-1);const time=document.getElementById('br-time');if(time){time.max=Math.max(0,dat.x.length-1);time.value=currentStep}const stepOut=document.getElementById('br-step-text');if(stepOut)stepOut.textContent=`${dat.xLabel||'Tempo'}: ${f(dat.x[currentStep],0)}`;
+ const metrics=document.getElementById('br-metrics');if(metrics)metrics.innerHTML=dat.metrics.map(([name,value,unit])=>`<div><strong>${f(value,2)}</strong><small>${e(name)} · ${e(unit)}</small></div>`).join('');
+ const note=document.getElementById('br-note');if(note)note.textContent=dat.conclusion;const saved=document.getElementById('br-saved');if(saved)saved.textContent=prior?'Referência guardada: a curva cinza pontilhada representa a primeira variável de resposta do cenário guardado.':'Fixe uma curva de referência e altere uma variável para testar outra hipótese.';
+ c.params.forEach(([key])=>{const out=document.getElementById('br-val-'+key);if(out)out.textContent=f(p[key],3)+' '+c.params.find(y=>y[0]===key)[2]})}
+function stop(){if(BR.timer)clearInterval(BR.timer);BR.timer=null;BR.run=false}
+function play(){stop();const dat=BR.current;if(!dat||dat.x.length<2)return;BR.run=true;BR.timer=setInterval(()=>{if(!BR.run){stop();return}BR.step=(BR.step==null?0:BR.step)+1;if(BR.step>=BR.current.x.length)BR.step=0;refresh()},300)}
+const shocks={elton:{refuge:65},pantanal:{alt:0,refuge:0},cerrado:{fogo:2,sever:85},caatinga:{chuva:280,retencao:25},amazonia:{con:15,pesca:60},mata:{cob:20,con:10,agro:60},mangue:{sal:50,mare:20},cidade:{imper:90,verde:5}};
+function clickHandler(ev){const el=ev.target.closest('button');if(!el||!el.closest('.br-wrap'))return;
+ if(el.dataset.brCase){BR.id=el.dataset.brCase;BR.step=null;render();return}
+ if(el.dataset.brReset){BR.params[BR.id]={...caseById(BR.id).values};BR.step=null;render();return}
+ if(el.dataset.brPerturb){Object.assign(BR.params[BR.id],shocks[BR.id]);render();return}
+ if(el.dataset.brBaseline){BR.base[BR.id]=JSON.parse(JSON.stringify(compute(BR.id,BR.params[BR.id])));refresh();return}
+ if(el.dataset.brPlay){play();return}
+ if(el.dataset.brPause){stop();return}
+}
+function inputHandler(ev){const el=ev.target;if(!el.closest('.br-wrap'))return;
+ if(el.dataset.brParam){BR.params[BR.id][el.dataset.brParam]=+el.value;stop();refresh()}
+ if(el.dataset.brTime){BR.step=+el.value;stop();refresh()}
+}
+document.addEventListener('click',clickHandler);document.addEventListener('input',inputHandler);
+function mount(){const target=document.getElementById('brasil-lab-root');if(target){render();return}if(typeof NAV!=='undefined'&&typeof S!=='undefined'&&typeof goto==='function'){
+ const index=NAV.findIndex(x=>x[0]==='labpop');NAV.splice(index+1,0,['brasilvivo','Brasil Vivo · Elton & biomas','🌿']);
+ const oldRender=renderGlobal();function renderGlobal() {return window.render;}
+ window.render=function(){if(S.view==='brasilvivo'){try{disposeMicro3D();disposeChem3D()}catch(ex){}renderNav();const holder=document.getElementById('view');if(holder)holder.innerHTML='<div id="brasil-lab-root"></div>';render();return}stop();oldRender()};
+ const qp=new URLSearchParams(location.search);if(qp.has('brasil'))S.view='brasilvivo';
+ window.render();
+ }
+}
+window.BRASIL_VIVO={cases:CASES,compute,plot,refresh,render,mount,history:HIST};
+mount();
+})();
+</script></body></html>
