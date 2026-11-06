@@ -280,12 +280,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
         <span class="rb-icon">👩‍🎓</span>
         <div class="rb-text"><strong>Aluno</strong><span>Entre com o código da sala</span></div>
       </button>
-      <a class="role-btn" href="./microbio-em-acao.html">
+      <button class="role-btn" type="button" onclick="document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-microbio').classList.add('active')">
         <span class="rb-icon">🦠</span>
         <div class="rb-text"><strong>Micróbio em Ação</strong><span>Jogue: assimile nutrientes e complete o ciclo do carbono</span></div>
-      </a>
+      </button>
     </div>
   </div>
+</div>
+
+<!-- ══ MICRÓBIO EM AÇÃO · JOGO INCORPORADO ═════════════════════════════════ -->
+<div class="screen" id="screen-microbio" style="height:100vh;min-height:100vh;overflow:hidden;flex-direction:column;background:#f2f5f1">
+  <div style="height:52px;min-height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;background:#103b36;color:#effbf3">
+    <strong>🦠 Micróbio em Ação</strong>
+    <button type="button" onclick="document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-entry').classList.add('active')" style="border:1px solid #b5d6bb;border-radius:8px;padding:7px 12px;background:#b5d6bb;color:#103e32;font-weight:800;cursor:pointer">← Voltar à sala</button>
+  </div>
+  <iframe src="./microbio-em-acao.html" title="Jogo Micróbio em Ação" style="display:block;width:100%;height:calc(100vh - 52px);flex:1;min-height:0;border:0;background:#f2f5f1"></iframe>
 </div>
 
 <!-- ══ PROFESSOR SCREEN ══════════════════════════════════════════════════════ -->
